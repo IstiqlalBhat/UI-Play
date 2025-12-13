@@ -1,7 +1,8 @@
 /**
- * JellyOS Combined Scene - Refined Visuals
- * Both Switch and Slider with full bezier rope physics
- * Shared lighting, different colors for each component
+ * JellyOS Combined Scene - Fixed & Robust
+ * Both Switch and Slider visible in the same 3D WebGPU scene
+ * Uses simplified slider geometry that actually works
+ * Fixed lighting and defaults
  */
 
 import tgpu from 'typegpu';
@@ -17,7 +18,7 @@ import { Slider } from './slider/slider.ts';
 import { CameraController } from './switch/camera.ts';
 import { TAAResolver } from './switch/taa.ts';
 
-// Import switch constants
+// Switch constants
 import {
     AMBIENT_COLOR,
     AMBIENT_INTENSITY,
@@ -56,22 +57,6 @@ import {
     intersectBox,
 } from './switch/utils.ts';
 
-// Slider constants
-import { LINE_HALF_THICK, LINE_RADIUS } from './slider/constants.ts';
-
-// Line info for slider
-const LineInfo = d.struct({
-    t: d.f32,
-    distance: d.f32,
-    normal: d.vec2f,
-});
-
-// Slider hit info
-const SliderSdfResult = d.struct({
-    distance: d.f32,
-    t: d.f32,
-});
-
 // Callbacks
 export interface CombinedCallbacks {
     onSwitchToggle?: (isOn: boolean) => void;
@@ -97,20 +82,12 @@ export async function initCombinedScene(canvas: HTMLCanvasElement, callbacks?: C
     const switchBehavior = new SwitchBehavior(root);
     await switchBehavior.init();
 
-    // Initialize slider with proper positioning in the scene
-    const NUM_POINTS = 17;
-    const SLIDER_Y_OFFSET = -0.4; // Position slider lower in the scene
-    const slider = new Slider(
-        root,
-        d.vec2f(-0.6, 0),  // Start position (left side)
-        d.vec2f(0.7, 0),   // End position (right side)
-        NUM_POINTS,
-        SLIDER_Y_OFFSET,
-    );
+    // Set initial switch state to ON (Dark Mode)
+    switchBehavior.toggled = true;
+    switchBehavior.stateUniform.writePartial({ progress: 1.0 });
 
-    // Get slider's bezier texture for SDF lookups
-    const bezierTexture = slider.bezierTexture.createView();
-    const bezierBbox = slider.bbox;
+    // Slider state
+    const sliderStateUniform = root.createUniform(d.vec2f, d.vec2f(0.0, 0)); // x = endX, y = unused
 
     let qualityScale = 0.75;
     let [width, height] = [canvas.width * qualityScale, canvas.height * qualityScale];
@@ -123,28 +100,29 @@ export async function initCombinedScene(canvas: HTMLCanvasElement, callbacks?: C
         minFilter: 'linear',
     });
 
-    // Camera to see both components nicely
+    // Camera to see both components clearly
     const camera = new CameraController(
         root,
-        d.vec3f(0.05, 2.2, 2.4),   // Slightly offset, good viewing angle
-        d.vec3f(0, -0.15, 0),      // Look slightly down to see both
+        d.vec3f(0, 3.2, 2.0),    // High angle
+        d.vec3f(0, -0.4, 0),     // Look slightly lower
         d.vec3f(0, 1, 0),
-        Math.PI / 4.5,              // Slightly narrower FOV for better framing
+        Math.PI / 4,
         width,
         height,
     );
     const cameraUniform = camera.cameraUniform;
 
-    // Shared lighting uniform
+    // Shared lighting - reduced intensity to prevent whiteout
     const lightUniform = root.createUniform(DirectionalLight, {
-        direction: std.normalize(d.vec3f(0.19, -0.28, 0.72)),
-        color: d.vec3f(1, 1, 1),
+        direction: std.normalize(d.vec3f(0.2, -0.4, 0.6)),
+        color: d.vec3f(0.9, 0.9, 0.9),
     });
 
-    // Different colors for each jelly component
-    const switchColorUniform = root.createUniform(d.vec4f, d.vec4f(0.1, 0.55, 1.0, 1.0)); // Bright blue
-    const sliderColorUniform = root.createUniform(d.vec4f, d.vec4f(1.0, 0.4, 0.15, 1.0)); // Warm orange
+    // Jelly colors
+    const switchColorUniform = root.createUniform(d.vec4f, d.vec4f(0.1, 0.5, 1.0, 1.0));   // Blue
+    const sliderColorUniform = root.createUniform(d.vec4f, d.vec4f(1.0, 0.35, 0.1, 1.0)); // Orange
 
+    // Default to Dark Mode (1)
     const darkModeUniform = root.createUniform(d.u32, d.u32(1));
     const randomUniform = root.createUniform(d.vec2f);
 
@@ -165,33 +143,17 @@ export async function initCombinedScene(canvas: HTMLCanvasElement, callbacks?: C
         return Ray({ origin: rayOrigin, direction: rayDir });
     };
 
-    // Switch positioned in upper area
-    const SWITCH_OFFSET = d.vec3f(0, 0.18, 0);
+    // Component positioning
+    const SWITCH_Y = 0.25;
+    const SLIDER_Y = -0.45;
+    const SLIDER_START_X = -0.6;
+    const SLIDER_END_X = 0.6;
 
-    // Get bounding box for both components
     const getSceneBounds = () => {
         'use gpu';
         return BoundingBox({
-            min: d.vec3f(-1.2, -0.8, -0.5),
-            max: d.vec3f(1.2, 0.8, 0.5),
-        });
-    };
-
-    // Slider bounding box for SDF lookup
-    const SdfBbox = d.struct({
-        left: d.f32,
-        right: d.f32,
-        bottom: d.f32,
-        top: d.f32,
-    });
-
-    const getSliderBbox = () => {
-        'use gpu';
-        return SdfBbox({
-            left: d.f32(bezierBbox[3]),
-            right: d.f32(bezierBbox[1]),
-            bottom: d.f32(bezierBbox[2] + SLIDER_Y_OFFSET),
-            top: d.f32(bezierBbox[0] + SLIDER_Y_OFFSET),
+            min: d.vec3f(-1.5, -0.8, -0.6),
+            max: d.vec3f(1.5, 0.8, 0.6),
         });
     };
 
@@ -203,29 +165,29 @@ export async function initCombinedScene(canvas: HTMLCanvasElement, callbacks?: C
     };
 
     // Ground cutout for switch
-    const rectangleCutoutDistSwitch = (position: d.v2f) => {
+    const switchCutoutDist = (position: d.v2f) => {
         'use gpu';
         const groundRoundness = GroundParams.groundRoundness;
         const groundRadius = GroundParams.groundRadius;
+        const offset = d.vec2f(position.x, position.y - SWITCH_Y * 0.5); // Adjust cutout placement
         return sdf.sdRoundedBox2d(
-            position,
+            offset,
             d.vec2f(SWITCH_RAIL_LENGTH * 0.5 + 0.2 + groundRoundness, groundRadius + groundRoundness),
             groundRadius + groundRoundness,
         );
     };
 
     // Ground cutout for slider
-    const rectangleCutoutDistSlider = (position: d.v2f) => {
+    const sliderCutoutDist = (position: d.v2f) => {
         'use gpu';
-        const groundRoundness = 0.02;
         return sdf.sdRoundedBox2d(
-            d.vec2f(position.x, position.y - SLIDER_Y_OFFSET),
-            d.vec2f(0.75, 0.12),
-            groundRoundness,
+            d.vec2f(position.x, position.y - SLIDER_Y),
+            d.vec2f(0.75, 0.16),
+            0.03,
         );
     };
 
-    // Main scene SDF (ground with cutouts)
+    // Main scene SDF
     const getMainSceneDist = (position: d.v3f) => {
         'use gpu';
         const groundThickness = GroundParams.groundThickness;
@@ -233,22 +195,26 @@ export async function initCombinedScene(canvas: HTMLCanvasElement, callbacks?: C
 
         const ground = sdf.sdPlane(position, d.vec3f(0, 1, 0), 0.06);
 
+        // Switch cutout logic
+        // We position the cutout around the switch
+        const switchPos = d.vec2f(position.x, position.z - SWITCH_Y * 0.5);
         const switchCutout = sdf.opExtrudeY(
             position,
-            -rectangleCutoutDistSwitch(position.xz),
+            -sdf.sdRoundedBox2d(d.vec2f(position.x, position.z + 0.05), d.vec2f(0.5, 0.15), 0.05),
             groundThickness - groundRoundness,
         ) - groundRoundness;
 
+        // Slider cutout logic
         const sliderCutout = sdf.opExtrudeY(
             position,
-            -rectangleCutoutDistSlider(position.xz),
+            -sdf.sdRoundedBox2d(d.vec2f(position.x, position.z - SLIDER_Y - 0.05), d.vec2f(0.8, 0.2), 0.05),
             groundThickness - groundRoundness,
         ) - groundRoundness;
 
         return sdf.opUnion(sdf.opUnion(ground, switchCutout), sliderCutout);
     };
 
-    // Bend operation for switch jelly
+    // Bend operation for switch
     const opCheapBend = (p: d.v3f, k: number) => {
         'use gpu';
         const c = std.cos(k * p.x);
@@ -257,7 +223,6 @@ export async function initCombinedScene(canvas: HTMLCanvasElement, callbacks?: C
         return d.vec3f(m.mul(p.xy), p.z);
     };
 
-    // Rotation for switch jelly
     const opRotateAxisAngle = (p: d.v3f, axis: d.v3f, angle: number) => {
         'use gpu';
         return std.add(
@@ -271,9 +236,8 @@ export async function initCombinedScene(canvas: HTMLCanvasElement, callbacks?: C
         'use gpu';
         const state = switchBehavior.stateUniform.$;
         const jellyOrigin = d.vec3f(
-            (state.progress - 0.5) * SWITCH_RAIL_LENGTH -
-            state.squashX * (state.progress - 0.5) * 0.2,
-            SWITCH_OFFSET.y + JELLY_HALFSIZE.y * 0.5,
+            (state.progress - 0.5) * SWITCH_RAIL_LENGTH - state.squashX * (state.progress - 0.5) * 0.2,
+            SWITCH_Y + JELLY_HALFSIZE.y * 0.5,
             0,
         );
         const jellyInvScale = d.vec3f(1 - state.squashX, 1, 1 - state.squashZ);
@@ -285,60 +249,32 @@ export async function initCombinedScene(canvas: HTMLCanvasElement, callbacks?: C
         return sdf.sdRoundedBox3d(opCheapBend(localPos, 0.8), JELLY_HALFSIZE.sub(0.1), 0.1);
     };
 
-    // Slider rope 2D SDF lookup via bezier texture
-    const sdInflatedPolyline2D = (p: d.v2f) => {
+    // Slider jelly SDF
+    const SLIDER_SIZE = d.vec3f(0.14, 0.12, 0.14);
+
+    const getSliderJellyDist = (position: d.v3f) => {
         'use gpu';
-        const bbox = getSliderBbox();
+        const sliderX = sliderStateUniform.$.x;
+        const jellyOrigin = d.vec3f(sliderX, SLIDER_Y + SLIDER_SIZE.y * 0.5 + 0.06, 0);
+        const localPos = position.sub(jellyOrigin);
 
-        const uv = d.vec2f(
-            (p.x - bbox.left) / (bbox.right - bbox.left),
-            (bbox.top - p.y) / (bbox.top - bbox.bottom),
-        );
-        const clampedUV = std.saturate(uv);
+        const squash = std.sin(sliderX * 6) * 0.03;
+        const squashedPos = d.vec3f(localPos.x * (1 + squash), localPos.y * (1 - squash), localPos.z);
 
-        const sampledColor = std.textureSampleLevel(
-            bezierTexture.$,
-            filteringSampler.$,
-            clampedUV,
-            0,
-        );
-
-        return LineInfo({
-            t: sampledColor.y,
-            distance: sampledColor.x,
-            normal: sampledColor.zw,
-        });
+        return sdf.sdRoundedBox3d(opCheapBend(squashedPos, 0.4), SLIDER_SIZE.sub(0.04), 0.04);
     };
 
-    // Slider end cap 3D SDF
-    const sliderCap3D = (position: d.v3f) => {
+    // Slider track SDF
+    const getSliderTrackDist = (position: d.v3f) => {
         'use gpu';
-        const endCap = slider.endCapUniform.$;
-        const capCenter = d.vec3f(endCap.z, endCap.w + SLIDER_Y_OFFSET, 0);
-        return sdf.sdSphere(position.sub(capCenter), 0.1);
-    };
+        const trackCenter = d.vec3f(0, SLIDER_Y + 0.035, 0);
+        const localPos = position.sub(trackCenter);
 
-    // Full slider rope 3D SDF
-    const sliderSdf3D = (position: d.v3f) => {
-        'use gpu';
-        // Transform position for 2D lookup
-        const p2d = d.vec2f(position.x, position.y);
-        const poly2D = sdInflatedPolyline2D(p2d);
+        const halfLen = (SLIDER_END_X - SLIDER_START_X) * 0.5 + 0.05;
+        const qx = std.max(0, std.abs(localPos.x) - halfLen);
+        const dist2d = std.length(d.vec2f(qx, localPos.y)) - 0.03;
 
-        // Extrude to 3D
-        const zDist = std.abs(position.z) - LINE_HALF_THICK;
-        const dist2D = poly2D.distance - LINE_RADIUS;
-
-        const dist3D = std.length(d.vec2f(std.max(0, dist2D), std.max(0, zDist))) +
-            std.min(0, std.max(dist2D, zDist));
-
-        // Blend with end cap
-        const capDist = sliderCap3D(position);
-
-        return SliderSdfResult({
-            distance: std.min(dist3D, capDist),
-            t: poly2D.t,
-        });
+        return std.max(dist2d, std.abs(localPos.z) - 0.08);
     };
 
     // Combined scene distance
@@ -346,33 +282,39 @@ export async function initCombinedScene(canvas: HTMLCanvasElement, callbacks?: C
         'use gpu';
         const mainScene = getMainSceneDist(position);
         const switchJelly = getSwitchJellyDist(position);
-        const sliderResult = sliderSdf3D(position);
+        const sliderJelly = getSliderJellyDist(position);
+        const sliderTrack = getSliderTrackDist(position);
+
+        let minDist = mainScene;
+        let type = ObjectType.BACKGROUND;
+
+        if (sliderTrack < minDist) {
+            minDist = sliderTrack;
+            type = d.u32(3); // Track
+        }
+        if (switchJelly < minDist) {
+            minDist = switchJelly;
+            type = d.u32(1); // Switch
+        }
+        if (sliderJelly < minDist) {
+            minDist = sliderJelly;
+            type = d.u32(2); // Slider (jelly)
+        }
 
         const hitInfo = HitInfo();
-
-        const minJelly = std.min(switchJelly, sliderResult.distance);
-
-        if (minJelly < mainScene) {
-            hitInfo.distance = minJelly;
-            // 1 = switch, 2 = slider
-            hitInfo.objectType = std.select(ObjectType.SLIDER, d.u32(2), sliderResult.distance < switchJelly);
-        } else {
-            hitInfo.distance = mainScene;
-            hitInfo.objectType = ObjectType.BACKGROUND;
-        }
+        hitInfo.distance = minDist;
+        hitInfo.objectType = type;
         return hitInfo;
     };
 
-    // AO distance function
     const getSceneDistForAO = (position: d.v3f) => {
         'use gpu';
         const mainScene = getMainSceneDist(position);
         const switchJelly = getSwitchJellyDist(position);
-        const sliderResult = sliderSdf3D(position);
-        return std.min(std.min(mainScene, switchJelly), sliderResult.distance);
+        const sliderJelly = getSliderJellyDist(position);
+        return std.min(std.min(mainScene, switchJelly), sliderJelly);
     };
 
-    // Normal calculation
     const getApproxNormal = (p: d.v3f, e: number): d.v3f => {
         'use gpu';
         const dist = getSceneDist(p).distance;
@@ -386,53 +328,24 @@ export async function initCombinedScene(canvas: HTMLCanvasElement, callbacks?: C
 
     const getNormal = (position: d.v3f) => {
         'use gpu';
-        if (std.abs(position.z) > 0.6 || std.abs(position.x) > 1.3) {
+        // Simplified bounds check for normal calc
+        if (std.abs(position.z) > 1.0 || std.abs(position.x) > 1.8) {
             return d.vec3f(0, 1, 0);
         }
         return getApproxNormal(position, 0.0001);
     };
 
-    const sqLength = (a: d.v3f) => {
-        'use gpu';
-        return std.dot(a, a);
-    };
+    const sqLength = (a: d.v3f) => std.dot(a, a);
 
-    // Shadow calculation
+    // Simple shadow logic
     const getFakeShadow = (position: d.v3f, lightDir: d.v3f): d.v3f => {
         'use gpu';
         if (position.y < -GroundParams.groundThickness) {
-            const fadeSharpness = 30;
-            const inset = 0.02;
-            const cutout = std.min(
-                rectangleCutoutDistSwitch(position.xz),
-                rectangleCutoutDistSlider(position.xz)
-            ) + inset;
-            const edgeDarkening = std.saturate(1 - cutout * fadeSharpness);
-            const lightGradient = std.saturate(-position.z * 4 * lightDir.z + 1);
-            return d.vec3f(1).mul(edgeDarkening).mul(lightGradient * 0.5);
+            return d.vec3f(0.8); // Simple ambient occlusion in holes
         }
         return d.vec3f(1);
     };
 
-    // Ambient occlusion
-    const calculateAO = (position: d.v3f, normal: d.v3f) => {
-        'use gpu';
-        let totalOcclusion = d.f32(0.0);
-        let sampleWeight = d.f32(1.0);
-        const stepDistance = AO_RADIUS / AO_STEPS;
-        for (let i = 1; i <= AO_STEPS; i++) {
-            const sampleHeight = stepDistance * d.f32(i);
-            const samplePosition = position.add(normal.mul(sampleHeight));
-            const distanceToSurface = getSceneDistForAO(samplePosition) - AO_BIAS;
-            const occlusionContribution = std.max(0.0, sampleHeight - distanceToSurface);
-            totalOcclusion += occlusionContribution * sampleWeight;
-            sampleWeight *= 0.5;
-            if (totalOcclusion > AO_RADIUS / AO_INTENSITY) break;
-        }
-        return std.saturate(1.0 - (AO_INTENSITY * totalOcclusion) / AO_RADIUS);
-    };
-
-    // Lighting calculation
     const calculateLighting = (hitPosition: d.v3f, normal: d.v3f, rayOrigin: d.v3f) => {
         'use gpu';
         const lightDir = std.neg(lightUniform.$.direction);
@@ -442,19 +355,52 @@ export async function initCombinedScene(canvas: HTMLCanvasElement, callbacks?: C
         const reflectDir = std.reflect(std.neg(lightDir), normal);
         const specularFactor = std.max(std.dot(viewDir, reflectDir), 0) ** SPECULAR_POWER;
         const specular = lightUniform.$.color.mul(specularFactor * SPECULAR_INTENSITY);
-        const baseColor = d.vec3f(0.9);
+        const baseColor = d.vec3f(0.8); // Greyscale base
         const directionalLight = baseColor.mul(lightUniform.$.color).mul(diffuse).mul(fakeShadow);
         const ambientLight = baseColor.mul(AMBIENT_COLOR).mul(AMBIENT_INTENSITY);
         return std.saturate(directionalLight.add(ambientLight).add(specular.mul(fakeShadow)));
     };
 
-    const applyAO = (litColor: d.v3f, hitPosition: d.v3f, normal: d.v3f) => {
+    // Make LIGHT_GROUND_ALBEDO slightly off-white to prevent blowout
+    const SAFE_LIGHT_ALBEDO = d.vec3f(0.92, 0.92, 0.92);
+
+    const renderBackground = (rayOrigin: d.v3f, rayDirection: d.v3f, backgroundHitDist: number) => {
         'use gpu';
-        const ao = calculateAO(hitPosition, normal);
-        return d.vec4f(litColor.mul(ao), 1.0);
+        const state = switchBehavior.stateUniform.$;
+        const hitPosition = rayOrigin.add(rayDirection.mul(backgroundHitDist));
+        const newNormal = getNormal(hitPosition);
+
+        // Switch bounce light
+        const switchX = (state.progress - 0.5) * SWITCH_RAIL_LENGTH;
+        const switchColor = switchColorUniform.$;
+        const sqDistSwitch = sqLength(hitPosition.sub(d.vec3f(switchX, SWITCH_Y, 0)));
+        const bounceSwitch = switchColor.xyz.mul(1 / (sqDistSwitch * 8 + 1) * 0.5);
+
+        // Slider bounce light
+        const sliderX = sliderStateUniform.$.x;
+        const sliderColor = sliderColorUniform.$;
+        const sqDistSlider = sqLength(hitPosition.sub(d.vec3f(sliderX, SLIDER_Y, 0)));
+        const bounceSlider = sliderColor.xyz.mul(1 / (sqDistSlider * 8 + 1) * 0.4);
+
+        const emission = std.smoothstep(0.7, 1, state.progress) * 1.5 + 0.5;
+        const litColor = calculateLighting(hitPosition, newNormal, rayOrigin);
+
+        const albedo = std.select(SAFE_LIGHT_ALBEDO, DARK_GROUND_ALBEDO, darkModeUniform.$ === 1);
+
+        const backgroundColor = albedo.mul(litColor)
+            .add(d.vec4f(bounceSwitch.mul(emission), 0))
+            .add(d.vec4f(bounceSlider, 0));
+
+        return d.vec4f(backgroundColor.xyz, 1);
     };
 
-    // No-jelly ray march for refraction
+    const renderTrack = (hitPosition: d.v3f, normal: d.v3f, rayOrigin: d.v3f) => {
+        'use gpu';
+        const litColor = calculateLighting(hitPosition, normal, rayOrigin);
+        const trackColor = d.vec3f(0.25, 0.25, 0.3); // Dark slate
+        return d.vec4f(trackColor.mul(litColor), 1.0);
+    };
+
     const rayMarchNoJelly = (rayOrigin: d.v3f, rayDirection: d.v3f) => {
         'use gpu';
         let distanceFromOrigin = d.f32();
@@ -470,43 +416,12 @@ export async function initCombinedScene(canvas: HTMLCanvasElement, callbacks?: C
         return d.vec3f();
     };
 
-    // Background rendering with bounce lights from both jellies
-    const renderBackground = (rayOrigin: d.v3f, rayDirection: d.v3f, backgroundHitDist: number) => {
-        'use gpu';
-        const state = switchBehavior.stateUniform.$;
-        const hitPosition = rayOrigin.add(rayDirection.mul(backgroundHitDist));
-        const newNormal = getNormal(hitPosition);
-
-        // Switch bounce light (blue)
-        const switchX = (state.progress - 0.5) * SWITCH_RAIL_LENGTH;
-        const switchColor = switchColorUniform.$;
-        const sqDistSwitch = sqLength(hitPosition.sub(d.vec3f(switchX, SWITCH_OFFSET.y, 0)));
-        const bounceSwitch = switchColor.xyz.mul(1 / (sqDistSwitch * 12 + 1) * 0.45);
-
-        // Slider bounce light (orange)
-        const endCapX = slider.endCapUniform.$.z;
-        const sliderColor = sliderColorUniform.$;
-        const sqDistSlider = sqLength(hitPosition.sub(d.vec3f(endCapX, SLIDER_Y_OFFSET, 0)));
-        const bounceSlider = sliderColor.xyz.mul(1 / (sqDistSlider * 12 + 1) * 0.35);
-
-        const emission = std.smoothstep(0.7, 1, state.progress) * 1.8 + 0.8;
-        const litColor = calculateLighting(hitPosition, newNormal, rayOrigin);
-        const backgroundColor = applyAO(
-            std.select(LIGHT_GROUND_ALBEDO, DARK_GROUND_ALBEDO, darkModeUniform.$ === 1).mul(litColor),
-            hitPosition,
-            newNormal,
-        ).add(d.vec4f(bounceSwitch.mul(emission), 0)).add(d.vec4f(bounceSlider, 0));
-
-        return d.vec4f(backgroundColor.xyz, 1);
-    };
-
-    // Main ray march function
     const rayMarch = (rayOrigin: d.v3f, rayDirection: d.v3f, uv: d.v2f) => {
         'use gpu';
         let totalSteps = d.u32();
         let backgroundDist = d.f32();
 
-        // March to background first
+        // March to background
         for (let i = 0; i < MAX_STEPS; i++) {
             const p = rayOrigin.add(rayDirection.mul(backgroundDist));
             const hit = getMainSceneDist(p);
@@ -515,14 +430,12 @@ export async function initCombinedScene(canvas: HTMLCanvasElement, callbacks?: C
         }
         const background = renderBackground(rayOrigin, rayDirection, backgroundDist);
 
-        // Check intersection with jelly bounds
         const bbox = getSceneBounds();
         const intersection = intersectBox(rayOrigin, rayDirection, bbox);
         if (!intersection.hit) return background;
 
         let distanceFromOrigin = std.max(d.f32(0.0), intersection.tMin);
 
-        // March through jellies
         for (let i = 0; i < MAX_STEPS; i++) {
             if (totalSteps >= MAX_STEPS) break;
             const currentPosition = rayOrigin.add(rayDirection.mul(distanceFromOrigin));
@@ -532,18 +445,23 @@ export async function initCombinedScene(canvas: HTMLCanvasElement, callbacks?: C
 
             if (hitInfo.distance < SURF_DIST) {
                 const hitPosition = rayOrigin.add(rayDirection.mul(distanceFromOrigin));
+
                 if (hitInfo.objectType === ObjectType.BACKGROUND) break;
 
-                // Determine jelly color
+                if (hitInfo.objectType === d.u32(3)) {
+                    const N = getNormal(hitPosition);
+                    return renderTrack(hitPosition, N, rayOrigin);
+                }
+
+                // Jelly
                 const isSlider = hitInfo.objectType === d.u32(2);
                 const jellyColor = std.select(switchColorUniform.$, sliderColorUniform.$, isSlider);
 
-                // Fresnel and refraction
                 const N = getNormal(hitPosition);
                 const I = rayDirection;
                 const cosi = std.min(1.0, std.max(0.0, std.dot(std.neg(I), N)));
                 const F = fresnelSchlick(cosi, d.f32(1.0), d.f32(JELLY_IOR));
-                const reflection = std.saturate(d.vec3f(hitPosition.y + 0.3));
+                const reflection = std.saturate(d.vec3f(hitPosition.y + 0.5)); // Brighter reflection
 
                 const eta = 1.0 / JELLY_IOR;
                 const k = 1.0 - eta * eta * (1.0 - cosi * cosi);
@@ -554,18 +472,18 @@ export async function initCombinedScene(canvas: HTMLCanvasElement, callbacks?: C
                     const exitPos = hitPosition.add(refrDir.mul(SURF_DIST * 4.0));
                     const env = rayMarchNoJelly(exitPos, refrDir);
 
-                    const scatterTint = jellyColor.xyz.mul(1.6);
-                    const density = d.f32(18.0);
+                    const scatterTint = jellyColor.xyz.mul(1.5);
+                    const density = d.f32(15.0);
                     const absorb = d.vec3f(1.0).sub(jellyColor.xyz).mul(density);
 
                     const state = switchBehavior.stateUniform.$;
-                    const progress = std.saturate(std.mix(1, 0.5, (hitPosition.y + 0.5) * 1.2)) *
-                        std.select(state.progress, d.f32(0.85), isSlider);
+                    const progress = std.saturate(std.mix(1, 0.5, (hitPosition.y + 0.5) * 1.5)) *
+                        std.select(state.progress, d.f32(0.9), isSlider);
                     const T = beerLambert(absorb.mul(progress ** 2), 0.1);
 
                     const lightDir = std.neg(lightUniform.$.direction);
                     const forward = std.max(0.0, std.dot(lightDir, refrDir));
-                    const scatter = scatterTint.mul(JELLY_SCATTER_STRENGTH * forward * progress ** 2.5);
+                    const scatter = scatterTint.mul(JELLY_SCATTER_STRENGTH * forward * progress ** 2);
                     refractedColor = env.mul(T).add(scatter);
                 }
 
@@ -579,7 +497,6 @@ export async function initCombinedScene(canvas: HTMLCanvasElement, callbacks?: C
         return background;
     };
 
-    // Fragment shaders
     const raymarchFn = tgpu['~unstable'].fragmentFn({
         in: { uv: d.vec2f },
         out: d.vec4f,
@@ -588,7 +505,7 @@ export async function initCombinedScene(canvas: HTMLCanvasElement, callbacks?: C
         const ndc = d.vec2f(uv.x * 2 - 1, -(uv.y * 2 - 1));
         const ray = getRay(ndc);
         const color = rayMarch(ray.origin, ray.direction, uv);
-        const exposure = std.select(1.4, 1.9, darkModeUniform.$ === 1);
+        const exposure = std.select(1.2, 1.7, darkModeUniform.$ === 1); // Reduced exposure
         return d.vec4f(std.tanh(color.xyz.mul(exposure)), 1);
     });
 
@@ -599,7 +516,6 @@ export async function initCombinedScene(canvas: HTMLCanvasElement, callbacks?: C
         return std.textureSample(sampleLayout.$.currentTexture, filteringSampler.$, input.uv);
     });
 
-    // Pipelines
     const rayMarchPipeline = root['~unstable']
         .withVertex(fullScreenTriangle, {})
         .withFragment(raymarchFn, { format: 'rgba8unorm' })
@@ -629,6 +545,7 @@ export async function initCombinedScene(canvas: HTMLCanvasElement, callbacks?: C
 
     let bindGroups = createBindGroups();
     let isRunning = true;
+    let currentSliderX = 0;
 
     function render(timestamp: number) {
         if (!isRunning) return;
@@ -640,9 +557,8 @@ export async function initCombinedScene(canvas: HTMLCanvasElement, callbacks?: C
 
         randomUniform.write(d.vec2f((Math.random() - 0.5) * 2, (Math.random() - 0.5) * 2));
 
-        // Update both components
         switchBehavior.update(deltaTime);
-        slider.update(deltaTime);
+        sliderStateUniform.write(d.vec2f(currentSliderX, 0));
 
         const currentFrame = frameCount % 2;
 
@@ -670,7 +586,7 @@ export async function initCombinedScene(canvas: HTMLCanvasElement, callbacks?: C
 
     function handleResize() {
         [width, height] = [canvas.width * qualityScale, canvas.height * qualityScale];
-        camera.updateProjection(Math.PI / 4.5, width, height);
+        camera.updateProjection(Math.PI / 4, width, height);
         textures = createTextures(root, width, height);
         backgroundTexture = createBackgroundTexture(root, width, height);
         taaResolver.resize(width, height);
@@ -681,23 +597,15 @@ export async function initCombinedScene(canvas: HTMLCanvasElement, callbacks?: C
     const resizeObserver = new ResizeObserver(() => handleResize());
     resizeObserver.observe(canvas);
 
-    // ========================================
-    // Event Handlers with improved detection
-    // ========================================
-
-    let currentToggleState = false;
+    let currentToggleState = true; // Default ON
     let isDragging = false;
     let lastSliderPercent = 0.5;
 
     function getClickArea(clientX: number, clientY: number): 'switch' | 'slider' | 'none' {
         const rect = canvas.getBoundingClientRect();
         const normY = (clientY - rect.top) / rect.height;
-
-        // Switch is in upper ~45% of screen
-        if (normY < 0.45) return 'switch';
-        // Slider is in lower ~55%
-        if (normY > 0.35) return 'slider';
-        return 'none';
+        if (normY < 0.5) return 'switch';
+        return 'slider';
     }
 
     function handleMouseDown(e: MouseEvent) {
@@ -729,15 +637,18 @@ export async function initCombinedScene(canvas: HTMLCanvasElement, callbacks?: C
     function updateSliderFromMouse(clientX: number) {
         const rect = canvas.getBoundingClientRect();
         const normX = (clientX - rect.left) / rect.width;
-        // Map to slider's physical range
-        const sliderX = -0.6 + normX * 1.3;
-        slider.setDragX(sliderX);
+        // range -0.6 to 0.6
+        const minX = SLIDER_START_X;
+        const maxX = SLIDER_END_X;
 
-        lastSliderPercent = Math.max(0, Math.min(1, (normX - 0.1) / 0.8));
+        // Convert 0-1 normX to range
+        const targetX = minX + normX * (maxX - minX);
+        currentSliderX = Math.max(minX, Math.min(maxX, targetX));
+
+        lastSliderPercent = (currentSliderX - minX) / (maxX - minX);
         callbacks?.onSliderChange?.(lastSliderPercent);
     }
 
-    // Touch handlers
     function handleTouchStart(e: TouchEvent) {
         if (e.touches.length === 0) return;
         const touch = e.touches[0];
@@ -778,11 +689,9 @@ export async function initCombinedScene(canvas: HTMLCanvasElement, callbacks?: C
         isDragging = false;
     });
 
-    // Start rendering
     requestAnimationFrame(render);
     callbacks?.onReady?.();
 
-    // Return control interface
     return {
         setSwitchToggled: (value: boolean) => { switchBehavior.toggled = value; currentToggleState = value; },
         isSwitchToggled: () => currentToggleState,

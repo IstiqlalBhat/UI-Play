@@ -2,6 +2,7 @@
 /**
  * JellyOS Loader
  * Initializes the combined 3D scene with both switch and slider
+ * Manages theme synchronization
  */
 
 import { initCombinedScene } from './src/combined-scene.ts';
@@ -20,6 +21,9 @@ function updateThemeStatus(enabled: boolean) {
             <span>${enabled ? 'Enabled' : 'Disabled'}</span>
         `;
         themeStatusEl.className = `status ${enabled ? 'active' : ''}`;
+
+        // Update document body class specific to glass theme if needed
+        document.body.classList.toggle('dark-mode', enabled);
     }
 }
 
@@ -91,10 +95,16 @@ async function initApp() {
     }
 
     try {
-        await initCombinedScene(mainCanvas, {
+        let scene: any = null;
+
+        scene = await initCombinedScene(mainCanvas, {
             onSwitchToggle: (isOn) => {
                 console.log('Switch toggled:', isOn);
-                updateThemeStatus(!isOn); // OFF = dark enabled
+                updateThemeStatus(isOn);
+                // Important: Update the scene's internal dark mode state
+                if (scene) {
+                    scene.setDarkMode(isOn);
+                }
             },
             onSliderChange: (percent) => {
                 updateSliderDisplay(percent);
@@ -104,6 +114,14 @@ async function initApp() {
                 console.log('JellyOS Combined Scene Ready');
             },
         });
+
+        // Initialize default state
+        const isInitialDark = true;
+        updateThemeStatus(isInitialDark);
+        if (scene) {
+            scene.setDarkMode(isInitialDark);
+            scene.setSwitchToggled(isInitialDark);
+        }
 
     } catch (error) {
         console.error('Failed to initialize JellyOS:', error);
