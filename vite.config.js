@@ -8,6 +8,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: resolve(__dirname, 'index.html'),
+        app: resolve(__dirname, 'app.html'),
         switch: resolve(__dirname, 'switch.html'),
         slider: resolve(__dirname, 'slider.html'),
       },

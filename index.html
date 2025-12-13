@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -88,7 +89,7 @@
         .card:hover {
             transform: translateY(-8px) scale(1.02);
             border-color: rgba(102, 126, 234, 0.5);
-            box-shadow: 
+            box-shadow:
                 0 20px 40px rgba(0, 0, 0, 0.3),
                 0 0 60px rgba(102, 126, 234, 0.2);
         }
@@ -181,12 +182,14 @@
             h1 {
                 font-size: 2rem;
             }
+
             .cards {
                 grid-template-columns: 1fr;
             }
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <header>
@@ -195,16 +198,34 @@
         </header>
 
         <div class="cards">
+            <a href="app.html" class="card card-app" style="grid-column: 1 / -1;">
+                <div class="card-icon"
+                    style="background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);">🖥️</div>
+                <h2 class="card-title">JellyOS Prototype</h2>
+                <p class="card-description">
+                    Experience a liquid glass OS interface with interactive controls.
+                    Toggle dark mode with the jelly switch and adjust volume with the slider.
+                    <strong>Fully responsive!</strong>
+                </p>
+                <div class="card-arrow">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M5 12h14M12 5l7 7-7 7" />
+                    </svg>
+                </div>
+            </a>
+
             <a href="switch.html" class="card card-switch">
                 <div class="card-icon">🔘</div>
                 <h2 class="card-title">Jelly Switch</h2>
                 <p class="card-description">
-                    A squishy toggle switch with spring physics, 
+                    A squishy toggle switch with spring physics,
                     realistic jelly deformation, and satisfying audio feedback.
                 </p>
                 <div class="card-arrow">
-                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M5 12h14M12 5l7 7-7 7"/>
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M5 12h14M12 5l7 7-7 7" />
                     </svg>
                 </div>
             </a>
@@ -213,12 +234,13 @@
                 <div class="card-icon">📊</div>
                 <h2 class="card-title">Jelly Slider</h2>
                 <p class="card-description">
-                    A draggable percentage slider with bezier-based 
+                    A draggable percentage slider with bezier-based
                     rope physics and dynamic percentage display.
                 </p>
                 <div class="card-arrow">
-                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M5 12h14M12 5l7 7-7 7"/>
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M5 12h14M12 5l7 7-7 7" />
                     </svg>
                 </div>
             </a>
@@ -229,4 +251,5 @@
         </footer>
     </div>
 </body>
+
 </html>
