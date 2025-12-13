@@ -1,16 +1,10 @@
 /// <reference types="@webgpu/types" />
 /**
- * JellyOS Unified Loader
- * Renders both switch and slider on a full-screen canvas with UI overlays
- * 
- * For simplicity, this version loads one component at a time based on click position.
- * The switch is positioned in the upper-left, slider in the lower-right.
+ * JellyOS Loader
+ * Initializes the combined 3D scene with both switch and slider
  */
 
-// State
-let isDarkMode = true;
-let sliderValue = 50;
-let activeComponent: 'switch' | 'slider' = 'switch';
+import { initCombinedScene } from './src/combined-scene.ts';
 
 // DOM Elements
 const loadingEl = document.getElementById('loading') as HTMLDivElement;
@@ -20,7 +14,6 @@ const mainCanvas = document.getElementById('main-canvas') as HTMLCanvasElement;
 
 // Update UI
 function updateThemeStatus(enabled: boolean) {
-    isDarkMode = enabled;
     if (themeStatusEl) {
         themeStatusEl.innerHTML = `
             <span class="status-dot"></span>
@@ -31,9 +24,9 @@ function updateThemeStatus(enabled: boolean) {
 }
 
 function updateSliderDisplay(percent: number) {
-    sliderValue = Math.round(percent * 100);
+    const value = Math.round(percent * 100);
     if (sliderValueEl) {
-        sliderValueEl.textContent = `${sliderValue}%`;
+        sliderValueEl.textContent = `${value}%`;
     }
 }
 
@@ -49,22 +42,16 @@ function initCanvas(): boolean {
 }
 
 // Resize handler
-function handleResize() {
+window.addEventListener('resize', () => {
     const dpr = window.devicePixelRatio || 1;
     mainCanvas.width = window.innerWidth * dpr;
     mainCanvas.height = window.innerHeight * dpr;
-}
+});
 
-window.addEventListener('resize', handleResize);
-
-// Check WebGPU
-async function checkWebGPU(): Promise<boolean> {
-    if (!navigator.gpu) return false;
-    try {
-        const adapter = await navigator.gpu.requestAdapter();
-        return adapter !== null;
-    } catch {
-        return false;
+// Hide loading
+function hideLoading() {
+    if (loadingEl) {
+        loadingEl.classList.add('hidden');
     }
 }
 
@@ -78,10 +65,14 @@ function showError(message: string) {
     `;
 }
 
-// Hide loading
-function hideLoading() {
-    if (loadingEl) {
-        loadingEl.classList.add('hidden');
+// Check WebGPU
+async function checkWebGPU(): Promise<boolean> {
+    if (!navigator.gpu) return false;
+    try {
+        const adapter = await navigator.gpu.requestAdapter();
+        return adapter !== null;
+    } catch {
+        return false;
     }
 }
 
@@ -100,65 +91,19 @@ async function initApp() {
     }
 
     try {
-        // Use the switch demo as the primary 3D background
-        // We'll temporarily redirect document.querySelector to our canvas
-        const originalQuerySelector = document.querySelector.bind(document);
-
-        // Override to return our main canvas
-        document.querySelector = ((selector: string) => {
-            if (selector === 'canvas') {
-                return mainCanvas;
-            }
-            return originalQuerySelector(selector);
-        }) as typeof document.querySelector;
-
-        // Import the switch module - this will render the switch on our canvas
-        const switchModule = await import('./src/switch/index.ts');
-
-        // Restore original
-        document.querySelector = originalQuerySelector;
-
-        // Track switch toggle state
-        let isToggled = false;
-
-        mainCanvas.addEventListener('mouseup', () => {
-            isToggled = !isToggled;
-            updateThemeStatus(!isToggled);
-        });
-
-        mainCanvas.addEventListener('touchend', () => {
-            isToggled = !isToggled;
-            updateThemeStatus(!isToggled);
-        });
-
-        // For the slider value, we'll estimate based on mouse position during drag
-        let isDragging = false;
-
-        mainCanvas.addEventListener('mousedown', () => {
-            isDragging = true;
-        });
-
-        mainCanvas.addEventListener('mouseup', () => {
-            isDragging = false;
-        });
-
-        mainCanvas.addEventListener('mousemove', (e) => {
-            if (isDragging) {
-                // Map horizontal position to volume percentage
-                const percent = e.clientX / window.innerWidth;
+        await initCombinedScene(mainCanvas, {
+            onSwitchToggle: (isOn) => {
+                console.log('Switch toggled:', isOn);
+                updateThemeStatus(!isOn); // OFF = dark enabled
+            },
+            onSliderChange: (percent) => {
                 updateSliderDisplay(percent);
-            }
+            },
+            onReady: () => {
+                hideLoading();
+                console.log('JellyOS Combined Scene Ready');
+            },
         });
-
-        mainCanvas.addEventListener('touchmove', (e) => {
-            if (e.touches.length > 0) {
-                const percent = e.touches[0].clientX / window.innerWidth;
-                updateSliderDisplay(percent);
-            }
-        });
-
-        hideLoading();
-        console.log('JellyOS initialized successfully');
 
     } catch (error) {
         console.error('Failed to initialize JellyOS:', error);
