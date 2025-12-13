@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Jelly Slider</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0f0f1a;
+        }
+
+        canvas {
+            display: block;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .back-btn {
+            position: fixed;
+            top: 1.25rem;
+            left: 1.25rem;
+            z-index: 10;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 0.625rem 1rem;
+            border-radius: 0.5rem;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            font-size: 0.875rem;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateX(-2px);
+        }
+
+        #attribution {
+            opacity: 1;
+            position: absolute;
+            bottom: 0.625rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 2;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 0.75rem 1rem;
+            border-radius: 0.625rem;
+            user-select: none;
+            pointer-events: auto;
+            transition: opacity 0.5s;
+            font-size: 1rem;
+            text-align: center;
+            white-space: nowrap;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        #attribution a {
+            color: #87ceeb;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        #attribution a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+    <a href="index.html" class="back-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 12H5M12 19l-7-7 7-7" />
+        </svg>
+        Back
+    </a>
+
+    <div id="attribution">
+        Inspired by work of
+        <a href="https://x.com/cerpow/status/1964953851603358112" target="_blank">Voicu Apostol</a>
+    </div>
+    <canvas></canvas>
+
+    <script type="module" src="/slider-loader.ts"></script>
+</body>
+
+</html>
