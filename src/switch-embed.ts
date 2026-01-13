@@ -337,7 +337,7 @@ export async function initSwitch(canvas: HTMLCanvasElement, callbacks?: SwitchCa
         return d.vec4f(backgroundColor.xyz, 1);
     };
 
-    const rayMarch = (rayOrigin: d.v3f, rayDirection: d.v3f, uv: d.v2f) => {
+    const rayMarch = (rayOrigin: d.v3f, rayDirection: d.v3f) => {
         'use gpu';
         let totalSteps = d.u32();
         let backgroundDist = d.f32();
@@ -401,7 +401,7 @@ export async function initSwitch(canvas: HTMLCanvasElement, callbacks?: SwitchCa
         randf.seed2(randomUniform.$.mul(uv));
         const ndc = d.vec2f(uv.x * 2 - 1, -(uv.y * 2 - 1));
         const ray = getRay(ndc);
-        const color = rayMarch(ray.origin, ray.direction, uv);
+        const color = rayMarch(ray.origin, ray.direction);
         const exposure = std.select(1.5, 2, darkModeUniform.$ === 1);
         return d.vec4f(std.tanh(color.xyz.mul(exposure)), 1);
     });

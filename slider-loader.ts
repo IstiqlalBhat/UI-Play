@@ -11,14 +11,14 @@
     new ResizeObserver(onResize).observe(document.body);
 
     // Execute the slider demo
-    // @ts-expect-error
+
     const example = await import('./src/slider/index.ts');
 
     // Create controls panel
-    createControlsPanel(example);
+    createSliderControlsPanel(example);
 })();
 
-function createControlsPanel(example: Record<string, unknown>) {
+function createSliderControlsPanel(example: Record<string, unknown>) {
     // Inject styles
     const styleSheet = document.createElement('style');
     styleSheet.textContent = `
@@ -585,19 +585,19 @@ function createControlsPanel(example: Record<string, unknown>) {
                 slider.max = `${params.max ?? 1}`;
                 slider.step = `${params.step ?? 0.01}`;
                 slider.value = `${params.initial ?? 0}`;
-                slider.addEventListener('input', () => params.onSliderChange(parseFloat(slider.value)));
+                slider.addEventListener('input', () => params.onSliderChange?.(parseFloat(slider.value)));
                 row.appendChild(slider);
-                params.onSliderChange(parseFloat(slider.value));
+                params.onSliderChange?.(parseFloat(slider.value));
             }
 
             if ('onSelectChange' in params) {
                 const select = document.createElement('select');
                 select.className = 'ctrl-select';
-                select.innerHTML = params.options.map((opt: string) => `<option value="${opt}">${opt}</option>`).join('');
-                select.value = params.initial ?? params.options[0];
-                select.addEventListener('change', () => params.onSelectChange(select.value));
+                select.innerHTML = (params.options || []).map((opt: string) => `<option value="${opt}">${opt}</option>`).join('');
+                select.value = (params.initial as string) ?? params.options?.[0] ?? '';
+                select.addEventListener('change', () => params.onSelectChange?.(select.value));
                 row.appendChild(select);
-                params.onSelectChange(select.value);
+                params.onSelectChange?.(select.value);
             }
 
             if ('onColorChange' in params) {
@@ -606,12 +606,12 @@ function createControlsPanel(example: Record<string, unknown>) {
                 const input = document.createElement('input');
                 input.type = 'color';
                 input.className = 'ctrl-color';
-                const initial = params.initial ?? [0, 0, 0];
-                input.value = rgbToHex(initial);
-                input.addEventListener('input', () => params.onColorChange(hexToRgb(input.value)));
+                const initial = (params.initial as [number, number, number]) ?? [0, 0, 0];
+                input.value = sliderRgbToHex(initial);
+                input.addEventListener('input', () => params.onColorChange?.(sliderHexToRgb(input.value)));
                 wrapper.appendChild(input);
                 row.appendChild(wrapper);
-                params.onColorChange(initial);
+                params.onColorChange?.(initial);
             }
 
             if ('onToggleChange' in params) {
@@ -629,13 +629,13 @@ function createControlsPanel(example: Record<string, unknown>) {
                     const isOn = toggle.classList.toggle('on');
                     status.classList.toggle('on', isOn);
                     status.textContent = isOn ? 'On' : 'Off';
-                    params.onToggleChange(isOn);
+                    params.onToggleChange?.(isOn);
                 });
 
                 wrapper.appendChild(status);
                 wrapper.appendChild(toggle);
                 row.appendChild(wrapper);
-                params.onToggleChange(params.initial ?? false);
+                params.onToggleChange?.((params.initial as boolean) ?? false);
             }
 
             body.appendChild(row);
@@ -648,15 +648,15 @@ function createControlsPanel(example: Record<string, unknown>) {
     document.body.appendChild(toggleBtn);
 
     // Toggle functionality
-    let isHidden = false;
+
 
     const hidePanel = () => {
-        isHidden = true;
+
         panel.classList.add('hidden');
     };
 
     const showPanel = () => {
-        isHidden = false;
+
         panel.classList.remove('hidden');
     };
 
@@ -676,7 +676,7 @@ type ControlParam = {
     onToggleChange?: (v: boolean) => void;
 };
 
-function hexToRgb(hex: string): [number, number, number] {
+function sliderHexToRgb(hex: string): [number, number, number] {
     return [
         parseInt(hex.slice(1, 3), 16) / 255,
         parseInt(hex.slice(3, 5), 16) / 255,
@@ -684,6 +684,6 @@ function hexToRgb(hex: string): [number, number, number] {
     ];
 }
 
-function rgbToHex(rgb: readonly [number, number, number]): string {
+function sliderRgbToHex(rgb: readonly [number, number, number]): string {
     return '#' + rgb.map(c => Math.round(c * 255).toString(16).padStart(2, '0')).join('');
 }

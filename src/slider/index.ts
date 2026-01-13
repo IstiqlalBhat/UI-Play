@@ -697,7 +697,7 @@ const renderBackground = (
   );
 };
 
-const rayMarch = (rayOrigin: d.v3f, rayDirection: d.v3f, uv: d.v2f) => {
+const rayMarch = (rayOrigin: d.v3f, rayDirection: d.v3f) => {
   'use gpu';
   let totalSteps = d.u32();
 
@@ -826,7 +826,6 @@ const raymarchFn = tgpu['~unstable'].fragmentFn({
   const color = rayMarch(
     ray.origin,
     ray.direction,
-    uv,
   );
   return d.vec4f(std.tanh(color.xyz.mul(1.3)), 1);
 });

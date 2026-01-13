@@ -416,7 +416,7 @@ const renderBackground = (
   return d.vec4f(backgroundColor.xyz, 1);
 };
 
-const rayMarch = (rayOrigin: d.v3f, rayDirection: d.v3f, uv: d.v2f) => {
+const rayMarch = (rayOrigin: d.v3f, rayDirection: d.v3f) => {
   'use gpu';
   let totalSteps = d.u32();
 
@@ -537,7 +537,6 @@ const raymarchFn = tgpu['~unstable'].fragmentFn({
   const color = rayMarch(
     ray.origin,
     ray.direction,
-    uv,
   );
 
   const exposure = std.select(1.5, 2, darkModeUniform.$ === 1);
@@ -652,7 +651,7 @@ canvas.addEventListener('touchstart', (event) => {
   event.preventDefault();
 });
 
-canvas.addEventListener('touchend', (event) => {
+canvas.addEventListener('touchend', () => {
   switchBehavior.pressed = false;
   switchBehavior.toggled = !switchBehavior.toggled;
 });
@@ -668,7 +667,7 @@ canvas.addEventListener('mouseup', (event) => {
   event.stopPropagation();
 });
 
-window.addEventListener('mouseup', (event) => {
+window.addEventListener('mouseup', () => {
   switchBehavior.pressed = false;
 });
 
