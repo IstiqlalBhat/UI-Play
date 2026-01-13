@@ -49,9 +49,8 @@ export const taaResolveFn = tgpu['~unstable'].computeFn({
 
   const historyColorClamped = std.clamp(historyColor.xyz, minColor, maxColor);
 
-  const uv = d.vec2f(gid.xy).div(d.vec2f(dimensions.xy));
 
-  const blendFactor = d.f32(0.9);
+  const blendFactor = d.f32(0.85);
 
   const resolvedColor = d.vec4f(
     std.mix(currentColor.xyz, historyColorClamped, blendFactor),

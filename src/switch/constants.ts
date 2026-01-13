@@ -2,7 +2,7 @@ import * as d from 'typegpu/data';
 import type { SpringProperties } from './spring.ts';
 
 // Rendering constants
-export const MAX_STEPS = 64;
+export const MAX_STEPS = 128;
 export const MAX_DIST = 10;
 export const SURF_DIST = 0.001;
 
@@ -21,7 +21,7 @@ export const JELLY_IOR = 1.42;
 export const JELLY_SCATTER_STRENGTH = 3;
 
 // Ambient occlusion constants
-export const AO_STEPS = 3;
+export const AO_STEPS = 8;
 export const AO_RADIUS = 0.1;
 export const AO_INTENSITY = 0.5;
 export const AO_BIAS = SURF_DIST * 5;
