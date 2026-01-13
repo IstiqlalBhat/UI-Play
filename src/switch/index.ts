@@ -647,6 +647,8 @@ requestAnimationFrame(render);
 // #region Example controls and cleanup
 
 canvas.addEventListener('touchstart', (event) => {
+  // Resume audio on first touch (required for mobile browsers)
+  switchBehavior.resumeAudio();
   switchBehavior.pressed = true;
   event.preventDefault();
 });
@@ -657,6 +659,8 @@ canvas.addEventListener('touchend', () => {
 });
 
 canvas.addEventListener('mousedown', (event) => {
+  // Resume audio on first click (required for mobile browsers)
+  switchBehavior.resumeAudio();
   switchBehavior.pressed = true;
   event.preventDefault();
 });

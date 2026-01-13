@@ -424,6 +424,316 @@ function createControlsPanel(example: Record<string, unknown>) {
             border-color: rgba(255,255,255,0.6);
         }
 
+        /* ========================================
+           MOBILE & TABLET RESPONSIVE STYLES
+        ======================================== */
+        
+        /* Tablets - 768px to 1024px */
+        @media (max-width: 1024px) {
+            .ctrl-panel {
+                width: 240px;
+                right: 1rem;
+                top: 1rem;
+            }
+
+            .ctrl-panel-inner {
+                padding: 0.875rem;
+            }
+
+            .ctrl-toggle-btn {
+                width: 48px;
+                height: 48px;
+                bottom: 1rem;
+                right: 1rem;
+            }
+
+            .ctrl-color-btn {
+                width: 32px;
+                height: 32px;
+            }
+
+            .ctrl-color-picker-wrapper,
+            .ctrl-color-custom-btn {
+                width: 32px;
+                height: 32px;
+            }
+        }
+
+        /* Small tablets and large phones - 600px to 768px */
+        @media (max-width: 768px) {
+            .ctrl-panel {
+                width: 200px;
+                max-width: 200px;
+                right: 0.5rem;
+                top: 3.5rem;
+                bottom: auto;
+                left: auto;
+                transform: none;
+                max-height: 55vh;
+                overflow-y: auto;
+            }
+
+            .ctrl-panel-inner {
+                padding: 0.75rem;
+                border-radius: 16px;
+            }
+
+            .ctrl-header {
+                margin-bottom: 0.5rem;
+                padding-bottom: 0.4rem;
+            }
+
+            .ctrl-title {
+                font-size: 0.8rem;
+            }
+
+            .ctrl-body {
+                gap: 0.5rem;
+            }
+
+            .ctrl-row {
+                gap: 0.25rem;
+            }
+
+            .ctrl-label {
+                font-size: 0.6rem;
+            }
+
+            .ctrl-toggle-btn {
+                width: 44px;
+                height: 44px;
+                bottom: 1rem;
+                right: 1rem;
+            }
+
+            .ctrl-slider {
+                height: 6px;
+            }
+
+            .ctrl-slider::-webkit-slider-thumb {
+                width: 18px;
+                height: 18px;
+            }
+
+            .ctrl-select {
+                padding: 0.4rem 0.5rem;
+                font-size: 0.7rem;
+            }
+
+            .ctrl-toggle {
+                width: 36px;
+                height: 18px;
+            }
+
+            .ctrl-toggle::after {
+                width: 14px;
+                height: 14px;
+            }
+
+            .ctrl-toggle.on::after {
+                transform: translateX(18px);
+            }
+
+            .ctrl-color-grid {
+                gap: 0.25rem;
+            }
+
+            .ctrl-color-btn {
+                width: 22px;
+                height: 22px;
+            }
+
+            .ctrl-toggle-row {
+                padding: 0.3rem 0.4rem;
+                border-radius: 8px;
+            }
+
+            .ctrl-toggle-status {
+                font-size: 0.6rem;
+            }
+        }
+
+        /* Mobile phones - under 480px */
+        @media (max-width: 480px) {
+            .ctrl-panel {
+                width: 160px;
+                max-width: 160px;
+                right: 0.5rem;
+                left: auto;
+                top: 3rem;
+                bottom: auto;
+                transform: none;
+                max-height: 50vh;
+                overflow-y: auto;
+            }
+
+            .ctrl-panel-inner {
+                padding: 0.5rem;
+                border-radius: 12px;
+            }
+
+            .ctrl-header {
+                margin-bottom: 0.4rem;
+            }
+
+            .ctrl-title {
+                font-size: 0.7rem;
+            }
+
+            .ctrl-body {
+                gap: 0.4rem;
+            }
+
+            .ctrl-label {
+                font-size: 0.55rem;
+            }
+
+            .ctrl-toggle-row {
+                padding: 0.25rem 0.4rem;
+                border-radius: 6px;
+            }
+
+            .ctrl-toggle-status {
+                font-size: 0.55rem;
+            }
+
+            .ctrl-slider-container {
+                height: 20px;
+            }
+
+            .ctrl-slider::-webkit-slider-thumb {
+                width: 16px;
+                height: 16px;
+            }
+
+            .ctrl-select {
+                padding: 0.3rem 0.4rem;
+                font-size: 0.65rem;
+                border-radius: 6px;
+            }
+
+            .ctrl-toggle-btn {
+                width: 40px;
+                height: 40px;
+                bottom: 0.5rem;
+                right: 0.5rem;
+            }
+
+            .ctrl-toggle-btn svg {
+                width: 18px;
+                height: 18px;
+            }
+
+            .ctrl-color-btn {
+                width: 20px;
+                height: 20px;
+            }
+
+            .ctrl-color-picker-wrapper,
+            .ctrl-color-custom-btn {
+                width: 20px;
+                height: 20px;
+            }
+
+            .ctrl-toggle {
+                width: 32px;
+                height: 16px;
+            }
+
+            .ctrl-toggle::after {
+                width: 12px;
+                height: 12px;
+            }
+
+            .ctrl-toggle.on::after {
+                transform: translateX(16px);
+            }
+        }
+
+        /* Extra small phones - under 360px */
+        @media (max-width: 360px) {
+            .ctrl-panel {
+                width: 140px;
+                max-width: 140px;
+                right: 0.25rem;
+                top: 2.75rem;
+                max-height: 45vh;
+            }
+
+            .ctrl-panel-inner {
+                padding: 0.4rem;
+            }
+
+            .ctrl-body {
+                gap: 0.3rem;
+            }
+
+            .ctrl-color-btn {
+                width: 18px;
+                height: 18px;
+            }
+
+            .ctrl-toggle-btn {
+                width: 36px;
+                height: 36px;
+            }
+        }
+
+        /* Landscape orientation on mobile */
+        @media (max-height: 500px) and (orientation: landscape) {
+            .ctrl-panel {
+                top: 0.5rem;
+                bottom: auto;
+                right: 0.5rem;
+                left: auto;
+                transform: none;
+                width: 180px;
+                max-height: calc(100vh - 1rem);
+                overflow-y: auto;
+            }
+
+            .ctrl-panel-inner {
+                padding: 0.5rem;
+            }
+
+            .ctrl-body {
+                gap: 0.3rem;
+            }
+
+            .ctrl-toggle-btn {
+                bottom: 0.5rem;
+                right: auto;
+                left: 0.5rem;
+            }
+        }
+
+        /* Touch-friendly improvements */
+        @media (hover: none) and (pointer: coarse) {
+            .ctrl-slider::-webkit-slider-thumb {
+                width: 24px;
+                height: 24px;
+            }
+
+            .ctrl-toggle {
+                width: 44px;
+                height: 24px;
+            }
+
+            .ctrl-toggle::after {
+                width: 20px;
+                height: 20px;
+            }
+
+            .ctrl-toggle.on::after {
+                transform: translateX(20px);
+            }
+
+            .ctrl-color-btn {
+                min-width: 28px;
+                min-height: 28px;
+            }
+        }
+
     `;
     document.head.appendChild(styleSheet);
 

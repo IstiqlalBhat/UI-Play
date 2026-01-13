@@ -164,8 +164,20 @@ export class SwitchBehavior {
     });
   }
 
+  /**
+   * Resume the AudioContext - required on mobile browsers where
+   * audio contexts start in suspended state
+   */
+  async resumeAudio() {
+    if (this.#audioContext.state === 'suspended') {
+      await this.#audioContext.resume();
+    }
+  }
+
   playSwitchOn() {
     if (!this.#switchOnBuffer) return;
+    // Ensure audio context is resumed
+    this.resumeAudio();
     const source = this.#audioContext.createBufferSource();
     source.buffer = this.#switchOnBuffer;
     source.connect(this.#audioContext.destination);
@@ -175,6 +187,8 @@ export class SwitchBehavior {
 
   playSwitchOff() {
     if (!this.#switchOffBuffer) return;
+    // Ensure audio context is resumed
+    this.resumeAudio();
     const source = this.#audioContext.createBufferSource();
     source.buffer = this.#switchOffBuffer;
     source.connect(this.#audioContext.destination);
@@ -185,7 +199,7 @@ export class SwitchBehavior {
   playSquelch() {
     const buffer = this.#squelchBuffers
       ? this.#squelchBuffers[
-        Math.floor(Math.random() * (this.#squelchBuffers.length))
+      Math.floor(Math.random() * (this.#squelchBuffers.length))
       ]
       : undefined;
 

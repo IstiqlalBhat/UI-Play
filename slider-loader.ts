@@ -436,72 +436,274 @@ function createSliderControlsPanel(example: Record<string, unknown>) {
             height: 16px;
         }
 
-        /* Mobile & Tablet */
-        @media (max-width: 768px) {
+        /* Mobile & Tablet Responsive - Narrow sidebar positioning */
+        @media (max-width: 1024px) {
             .ctrl-panel {
-                top: auto;
-                bottom: 1rem;
-                right: 1rem;
-                left: 1rem;
-                width: auto;
+                width: 220px;
+                right: 0.75rem;
+                top: 3.5rem;
             }
 
             .ctrl-panel-inner {
-                border-radius: 18px;
+                border-radius: 16px;
             }
 
             .ctrl-header {
-                padding: 1rem;
+                padding: 0.875rem;
             }
 
             .ctrl-body {
-                padding: 0.875rem 1rem 1.15rem;
-                gap: 1rem;
-            }
-
-            .ctrl-slider::-webkit-slider-thumb {
-                width: 26px;
-                height: 26px;
-            }
-
-            .ctrl-toggle {
-                width: 58px;
-                height: 32px;
-            }
-
-            .ctrl-toggle::after {
-                width: 26px;
-                height: 26px;
-            }
-
-            .ctrl-toggle.on::after {
-                transform: translateX(26px);
+                padding: 0.75rem 0.875rem 1rem;
+                gap: 0.875rem;
             }
 
             .ctrl-toggle-btn {
-                top: auto;
-                bottom: 1rem;
-                right: 1rem;
-                width: 54px;
-                height: 54px;
-                border-radius: 16px;
+                width: 44px;
+                height: 44px;
+                border-radius: 12px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .ctrl-panel {
+                width: 180px;
+                right: 0.5rem;
+                top: 3rem;
+                max-height: 60vh;
+                overflow-y: auto;
+            }
+
+            .ctrl-panel-inner {
+                border-radius: 14px;
+            }
+
+            .ctrl-header {
+                padding: 0.75rem;
+            }
+
+            .ctrl-eyebrow {
+                font-size: 0.55rem;
+            }
+
+            .ctrl-title {
+                font-size: 0.95rem;
+            }
+
+            .ctrl-body {
+                padding: 0.6rem 0.75rem 0.875rem;
+                gap: 0.75rem;
+            }
+
+            .ctrl-label {
+                font-size: 0.65rem;
+                gap: 0.4rem;
+            }
+
+            .ctrl-icon {
+                width: 20px;
+                height: 20px;
+                font-size: 0.6rem;
+                border-radius: 6px;
+            }
+
+            .ctrl-slider {
+                height: 6px;
+            }
+
+            .ctrl-slider::-webkit-slider-thumb {
+                width: 18px;
+                height: 18px;
+            }
+
+            .ctrl-select {
+                padding: 0.5rem 0.75rem;
+                font-size: 0.7rem;
+                border-radius: 8px;
+            }
+
+            .ctrl-color-wrap {
+                height: 36px;
+                border-radius: 8px;
+            }
+
+            .ctrl-toggle {
+                width: 40px;
+                height: 22px;
+            }
+
+            .ctrl-toggle::after {
+                width: 18px;
+                height: 18px;
+                top: 2px;
+                left: 2px;
+            }
+
+            .ctrl-toggle.on::after {
+                transform: translateX(18px);
+            }
+
+            .ctrl-toggle-status {
+                font-size: 0.6rem;
+            }
+
+            .ctrl-toggle-btn {
+                top: 0.75rem;
+                right: 0.5rem;
+                bottom: auto;
+                width: 40px;
+                height: 40px;
+                border-radius: 10px;
+            }
+
+            .ctrl-toggle-btn svg {
+                width: 18px;
+                height: 18px;
+            }
+
+            .ctrl-close-btn {
+                width: 26px;
+                height: 26px;
+                border-radius: 6px;
+                top: 0.75rem;
+                right: 0.75rem;
+            }
+
+            .ctrl-close-btn svg {
+                width: 12px;
+                height: 12px;
             }
         }
 
         @media (max-width: 480px) {
             .ctrl-panel {
-                bottom: 0.75rem;
-                right: 0.75rem;
-                left: 0.75rem;
+                width: 150px;
+                right: 0.375rem;
+                top: 2.75rem;
+                max-height: 55vh;
+            }
+
+            .ctrl-header {
+                padding: 0.5rem;
+            }
+
+            .ctrl-eyebrow {
+                font-size: 0.5rem;
+                margin-bottom: 0.2rem;
             }
 
             .ctrl-title {
-                font-size: 1.1rem;
+                font-size: 0.8rem;
+            }
+
+            .ctrl-body {
+                padding: 0.5rem;
+                gap: 0.5rem;
+            }
+
+            .ctrl-row {
+                gap: 0.35rem;
+            }
+
+            .ctrl-label {
+                font-size: 0.55rem;
+            }
+
+            .ctrl-icon {
+                width: 16px;
+                height: 16px;
+                font-size: 0.5rem;
+            }
+
+            .ctrl-slider {
+                height: 5px;
+            }
+
+            .ctrl-slider::-webkit-slider-thumb {
+                width: 14px;
+                height: 14px;
+            }
+
+            .ctrl-select {
+                padding: 0.35rem 0.5rem;
+                font-size: 0.6rem;
+            }
+
+            .ctrl-color-wrap {
+                height: 28px;
+            }
+
+            .ctrl-toggle {
+                width: 32px;
+                height: 18px;
+            }
+
+            .ctrl-toggle::after {
+                width: 14px;
+                height: 14px;
+            }
+
+            .ctrl-toggle.on::after {
+                transform: translateX(14px);
+            }
+
+            .ctrl-toggle-status {
+                font-size: 0.5rem;
             }
 
             .ctrl-toggle-btn {
-                bottom: 0.75rem;
-                right: 0.75rem;
+                top: 0.5rem;
+                right: 0.375rem;
+                width: 36px;
+                height: 36px;
+            }
+
+            .ctrl-close-btn {
+                width: 22px;
+                height: 22px;
+                top: 0.5rem;
+                right: 0.5rem;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .ctrl-panel {
+                width: 130px;
+                max-height: 50vh;
+            }
+
+            .ctrl-title {
+                font-size: 0.7rem;
+            }
+
+            .ctrl-toggle-btn {
+                width: 32px;
+                height: 32px;
+            }
+        }
+
+        /* Landscape mode */
+        @media (max-height: 500px) and (orientation: landscape) {
+            .ctrl-panel {
+                top: 0.5rem;
+                right: 0.5rem;
+                width: 160px;
+                max-height: calc(100vh - 1rem);
+                overflow-y: auto;
+            }
+
+            .ctrl-header {
+                padding: 0.5rem;
+            }
+
+            .ctrl-body {
+                padding: 0.5rem;
+                gap: 0.5rem;
+            }
+
+            .ctrl-toggle-btn {
+                top: 0.5rem;
+                left: 0.5rem;
+                right: auto;
             }
         }
 
