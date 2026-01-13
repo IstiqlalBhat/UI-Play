@@ -11,356 +11,631 @@
     new ResizeObserver(onResize).observe(document.body);
 
     // Execute the switch demo
-    // @ts-expect-error
     const example = await import('./src/switch/index.ts');
 
     // Create controls panel
-    createControlsPanel(example, 'switch');
+    createControlsPanel(example);
 })();
 
-function createControlsPanel(example: Record<string, unknown>, theme: 'switch' | 'slider') {
+function createControlsPanel(example: Record<string, unknown>) {
     // Inject styles
     const styleSheet = document.createElement('style');
     styleSheet.textContent = `
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateX(20px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        .controls-panel {
-            position: fixed;
-            top: 1.25rem;
-            right: 1.25rem;
-            z-index: 100;
-            background: linear-gradient(135deg, rgba(15, 15, 30, 0.95) 0%, rgba(30, 30, 50, 0.9) 100%);
-            backdrop-filter: blur(20px);
-            padding: 0;
-            border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow:
-                0 25px 50px -12px rgba(0, 0, 0, 0.5),
-                0 0 0 1px rgba(255, 255, 255, 0.05) inset,
-                0 0 80px rgba(102, 126, 234, 0.15);
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            font-size: 0.875rem;
-            color: white;
-            min-width: 260px;
-            max-width: 300px;
-            overflow: hidden;
-            animation: slideIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        .controls-header {
-            padding: 1.25rem 1.25rem 1rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.1) 100%);
-        }
-        .controls-title {
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            color: rgba(255, 255, 255, 0.5);
-            margin-bottom: 0.25rem;
-        }
-        .controls-subtitle {
-            font-size: 1.1rem;
-            font-weight: 600;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        .controls-body {
-            padding: 1rem 1.25rem 1.25rem;
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-        .control-row {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-            animation: fadeIn 0.4s ease backwards;
-        }
-        .control-row:nth-child(1) { animation-delay: 0.1s; }
-        .control-row:nth-child(2) { animation-delay: 0.15s; }
-        .control-row:nth-child(3) { animation-delay: 0.2s; }
-        .control-row:nth-child(4) { animation-delay: 0.25s; }
-        .control-row:nth-child(5) { animation-delay: 0.3s; }
-        .control-label {
-            font-weight: 500;
-            font-size: 0.8rem;
-            color: rgba(255, 255, 255, 0.7);
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        .control-label-icon {
-            width: 18px;
-            height: 18px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.3) 0%, rgba(118, 75, 162, 0.3) 100%);
-            border-radius: 6px;
-            font-size: 0.7rem;
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        :root {
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            --liquid-metal-gradient: linear-gradient(135deg, #e0e0e0 0%, #ffffff 50%, #a0a0a0 100%);
+            --liquid-metal-shadow: 
+                inset 2px 2px 5px rgba(255, 255, 255, 0.8),
+                inset -2px -2px 5px rgba(0, 0, 0, 0.2),
+                5px 5px 10px rgba(0, 0, 0, 0.2);
+            --text-color: #ffffff;
+            --accent-color: #00f0ff; /* Neon Cyan for contrast */
         }
 
-        /* Custom Range Slider */
-        .custom-slider {
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        @keyframes panelSlideIn {
+            from {
+                opacity: 0;
+                transform: translateX(30px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0) scale(1);
+            }
+        }
+
+        @keyframes panelSlideOut {
+            from {
+                opacity: 1;
+                transform: translateX(0) scale(1);
+            }
+            to {
+                opacity: 0;
+                transform: translateX(30px) scale(0.95);
+            }
+        }
+        
+        @keyframes liquidFlow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Main Panel - Liquid Glass */
+        .ctrl-panel {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            z-index: 100;
+            width: 320px;
+            animation: panelSlideIn 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .ctrl-panel.hidden {
+            pointer-events: none;
+        }
+
+        .ctrl-panel.hidden .ctrl-panel-inner {
+            animation: panelSlideOut 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+
+        .ctrl-panel-inner {
+            background: rgba(20, 20, 30, 0.65);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 24px;
+            padding: 1.5rem;
+            box-shadow: 
+                0 20px 50px rgba(0, 0, 0, 0.5),
+                inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+            position: relative;
+        }
+        
+        /* Subtle chromatic aberration border effect */
+        .ctrl-panel-inner::before {
+            content: '';
+            position: absolute;
+            inset: -1px;
+            border-radius: 24px;
+            padding: 1px;
+            background: linear-gradient(45deg, rgba(255,255,255,0.1), rgba(255,255,255,0.5), rgba(255,255,255,0.1));
+            -webkit-mask: 
+                linear-gradient(#fff 0 0) content-box, 
+                linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+            opacity: 0.5;
+        }
+
+        /* Header */
+        .ctrl-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .ctrl-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-color);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            background: linear-gradient(90deg, #fff, #aaa, #fff);
+            background-size: 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: liquidFlow 3s linear infinite;
+        }
+
+        .ctrl-close-btn {
+            background: transparent;
+            border: none;
+            color: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        
+        .ctrl-close-btn:hover {
+            color: #fff;
+        }
+
+        /* Controls Body */
+        .ctrl-body {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .ctrl-row {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .ctrl-label {
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.7);
+            margin-left: 0.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Liquid Metal Slider */
+        .ctrl-slider-container {
+            position: relative;
+            height: 24px;
+            display: flex;
+            align-items: center;
+        }
+
+        .ctrl-slider {
             -webkit-appearance: none;
             appearance: none;
             width: 100%;
             height: 6px;
+            background: rgba(0, 0, 0, 0.3);
             border-radius: 3px;
-            background: linear-gradient(90deg, rgba(102, 126, 234, 0.3) 0%, rgba(118, 75, 162, 0.3) 100%);
             outline: none;
-            transition: all 0.2s ease;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);
         }
-        .custom-slider:hover {
-            background: linear-gradient(90deg, rgba(102, 126, 234, 0.5) 0%, rgba(118, 75, 162, 0.5) 100%);
-        }
-        .custom-slider::-webkit-slider-thumb {
+
+        .ctrl-slider::-webkit-slider-thumb {
             -webkit-appearance: none;
             appearance: none;
-            width: 18px;
-            height: 18px;
+            width: 20px;
+            height: 20px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #e0e0e0, #ffffff);
             cursor: pointer;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-            transition: all 0.2s ease;
-            border: 2px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 
+                0 2px 5px rgba(0,0,0,0.4),
+                inset 1px 1px 2px rgba(255,255,255,0.8),
+                inset -1px -1px 2px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.4);
+            transition: transform 0.1s;
         }
-        .custom-slider::-webkit-slider-thumb:hover {
-            transform: scale(1.15);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
-        }
-        .custom-slider::-moz-range-thumb {
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-            border: 2px solid rgba(255, 255, 255, 0.2);
+        
+        .ctrl-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
         }
 
-        /* Custom Select */
-        .custom-select {
-            padding: 0.65rem 1rem;
-            border-radius: 10px;
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.04) 100%);
-            color: white;
+        /* Liquid Metal Select */
+        .ctrl-select-wrap {
+            position: relative;
+        }
+
+        .ctrl-select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: rgba(255, 255, 255, 0.03);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            font-size: 0.85rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s ease;
+            border-radius: 12px;
+            color: #fff;
+            font-size: 0.9rem;
             outline: none;
+            appearance: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 
+                inset 0 2px 4px rgba(0,0,0,0.2);
         }
-        .custom-select:hover {
-            border-color: rgba(102, 126, 234, 0.5);
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.06) 100%);
+
+        .ctrl-select:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.2);
         }
-        .custom-select:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+
+        .ctrl-select-arrow {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+            color: rgba(255, 255, 255, 0.5);
         }
-        .custom-select option {
+        
+        .ctrl-select option {
             background: #1a1a2e;
             color: white;
-            padding: 0.5rem;
         }
 
-        /* Custom Color Picker */
-        .color-picker-wrapper {
-            position: relative;
-            width: 100%;
-            height: 40px;
-            border-radius: 10px;
-            overflow: hidden;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: all 0.2s ease;
-        }
-        .color-picker-wrapper:hover {
-            border-color: rgba(102, 126, 234, 0.5);
-            box-shadow: 0 0 20px rgba(102, 126, 234, 0.2);
-        }
-        .custom-color {
-            width: 100%;
-            height: 100%;
-            border: none;
-            cursor: pointer;
-            padding: 0;
-        }
-        .custom-color::-webkit-color-swatch-wrapper {
-            padding: 0;
-        }
-        .custom-color::-webkit-color-swatch {
-            border: none;
-            border-radius: 8px;
-        }
-
-        /* Custom Toggle */
-        .toggle-wrapper {
+        /* Liquid Metal Toggle */
+        .ctrl-toggle-row {
             display: flex;
             align-items: center;
             justify-content: space-between;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 0.5rem 0.75rem;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
-        .custom-toggle {
+
+        .ctrl-toggle-status {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.6);
+            transition: color 0.3s;
+        }
+        
+        .ctrl-toggle-status.on {
+            color: var(--accent-color);
+            text-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+        }
+
+        .ctrl-toggle {
             position: relative;
             width: 48px;
             height: 26px;
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(0, 0, 0, 0.4);
             border-radius: 13px;
             cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+            transition: background 0.3s;
         }
-        .custom-toggle::after {
+        
+        .ctrl-toggle.on {
+            background: rgba(0, 240, 255, 0.2);
+        }
+
+        .ctrl-toggle::after {
             content: '';
             position: absolute;
             top: 2px;
             left: 2px;
-            width: 20px;
-            height: 20px;
-            background: white;
+            width: 22px;
+            height: 22px;
+            background: linear-gradient(135deg, #e0e0e0, #fff);
             border-radius: 50%;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            box-shadow: 
+                0 2px 4px rgba(0,0,0,0.3),
+                inset 1px 1px 2px rgba(255,255,255,0.9);
+            transition: transform 0.3s cubic-bezier(0.5, 1.6, 0.4, 0.7);
         }
-        .custom-toggle.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-color: transparent;
-        }
-        .custom-toggle.active::after {
+
+        .ctrl-toggle.on::after {
             transform: translateX(22px);
-            box-shadow: 0 2px 12px rgba(102, 126, 234, 0.5);
+            background: linear-gradient(135deg, #fff, #00f0ff);
+            box-shadow: 
+                0 2px 5px rgba(0,0,0,0.3),
+                0 0 10px rgba(0, 240, 255, 0.6),
+                inset 1px 1px 2px rgba(255,255,255,0.9);
         }
-        .toggle-hidden {
-            position: absolute;
+
+        /* Toggle Button (Fab) */
+        .ctrl-toggle-btn {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 56px;
+            height: 56px;
+            border-radius: 28px;
+            border: none;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            color: white;
+            cursor: pointer;
+            z-index: 101;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 8px 32px 0 rgba(0, 0, 0, 0.37),
+                inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .ctrl-toggle-btn:hover {
+            transform: scale(1.1) rotate(90deg);
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: 
+                0 10px 40px 0 rgba(0, 0, 0, 0.4),
+                inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+        }
+        
+        .ctrl-panel:not(.hidden) ~ .ctrl-toggle-btn {
+            transform: scale(0);
             opacity: 0;
             pointer-events: none;
         }
+
+        .ctrl-color-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.25rem;
+        }
+
+        .ctrl-color-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.2);
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ctrl-color-btn:hover {
+            transform: scale(1.1);
+            border-color: rgba(255,255,255,0.5);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+        }
+
+        .ctrl-color-btn::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.4) 0%, transparent 50%, rgba(0,0,0,0.1) 100%);
+            pointer-events: none;
+        }
+
+        .ctrl-color-picker-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+        }
+
+        .ctrl-color-input {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+            z-index: 2;
+        }
+
+        .ctrl-color-custom-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.3);
+            background: conic-gradient(red, yellow, lime, aqua, blue, magenta, red);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            transition: all 0.2s;
+        }
+
+        .ctrl-color-custom-btn:hover {
+            transform: scale(1.1) rotate(45deg);
+            border-color: rgba(255,255,255,0.6);
+        }
+
     `;
     document.head.appendChild(styleSheet);
 
+    // Create toggle button
+    const toggleBtn = document.createElement('button');
+    toggleBtn.className = 'ctrl-toggle-btn';
+    toggleBtn.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+    `;
+
     // Create panel
-    const controlsPanel = document.createElement('div');
-    controlsPanel.className = 'controls-panel';
+    const panel = document.createElement('div');
+    panel.className = 'ctrl-panel';
+
+    const panelInner = document.createElement('div');
+    panelInner.className = 'ctrl-panel-inner';
 
     // Header
     const header = document.createElement('div');
-    header.className = 'controls-header';
+    header.className = 'ctrl-header';
     header.innerHTML = `
-        <div class="controls-title">Settings</div>
-        <div class="controls-subtitle">Jelly Switch</div>
+        <div class="ctrl-title">Liquid Control</div>
     `;
-    controlsPanel.appendChild(header);
+
+    // Close button
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'ctrl-close-btn';
+    closeBtn.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+    `;
+    header.appendChild(closeBtn);
+    panelInner.appendChild(header);
 
     // Body
     const body = document.createElement('div');
-    body.className = 'controls-body';
+    body.className = 'ctrl-body';
 
     const icons: Record<string, string> = {
         'Quality': '✨',
         'Light dir': '☀️',
-        'Jelly Color': '🎨',
-        'Dark Mode': '🌙',
-        'Blur': '💫',
+        'Jelly Color': '💧',
+        'Dark Mode': '🌘',
+        'Blur': '🌫️',
     };
 
     for (const controls of Object.values(example)) {
         if (typeof controls === 'function' || !controls) continue;
 
-        for (const [label, params] of Object.entries(controls as Record<string, ControlParam>)) {
+        for (const [label, params] of Object.entries(controls as Record<string, SwitchControlParam>)) {
             const row = document.createElement('div');
-            row.className = 'control-row';
+            row.className = 'ctrl-row';
 
-            const labelEl = document.createElement('label');
-            labelEl.className = 'control-label';
-            labelEl.innerHTML = `<span class="control-label-icon">${icons[label] || '⚙️'}</span>${label}`;
-            row.appendChild(labelEl);
-
-            if ('onSliderChange' in params) {
-                const slider = document.createElement('input');
-                slider.type = 'range';
-                slider.className = 'custom-slider';
-                slider.min = `${params.min ?? 0}`;
-                slider.max = `${params.max ?? 1}`;
-                slider.step = `${params.step ?? 0.01}`;
-                slider.value = `${params.initial ?? 0}`;
-                slider.addEventListener('input', () => params.onSliderChange(parseFloat(slider.value)));
-                row.appendChild(slider);
-                params.onSliderChange(parseFloat(slider.value));
-            }
-
-            if ('onSelectChange' in params) {
-                const select = document.createElement('select');
-                select.className = 'custom-select';
-                select.innerHTML = params.options.map((opt: string) => `<option value="${opt}">${opt}</option>`).join('');
-                select.value = params.initial ?? params.options[0];
-                select.addEventListener('change', () => params.onSelectChange(select.value));
-                row.appendChild(select);
-                params.onSelectChange(select.value);
-            }
-
-            if ('onColorChange' in params) {
+            if ('onToggleChange' in params && params.onToggleChange) {
+                // Special layout for toggles
                 const wrapper = document.createElement('div');
-                wrapper.className = 'color-picker-wrapper';
-                const input = document.createElement('input');
-                input.type = 'color';
-                input.className = 'custom-color';
-                const initial = params.initial ?? [0, 0, 0];
-                input.value = rgbToHex(initial);
-                input.addEventListener('input', () => params.onColorChange(hexToRgb(input.value)));
-                wrapper.appendChild(input);
-                row.appendChild(wrapper);
-                params.onColorChange(initial);
-            }
+                wrapper.className = 'ctrl-toggle-row';
 
-            if ('onToggleChange' in params) {
-                const wrapper = document.createElement('div');
-                wrapper.className = 'toggle-wrapper';
+                const labelDiv = document.createElement('div');
+                labelDiv.className = 'ctrl-label';
+                labelDiv.innerHTML = `${icons[label] || '⚙️'} ${label}`;
 
-                const toggleLabel = document.createElement('span');
-                toggleLabel.style.cssText = 'font-size: 0.8rem; color: rgba(255,255,255,0.5);';
-                toggleLabel.textContent = params.initial ? 'On' : 'Off';
+                const status = document.createElement('span');
+                status.className = `ctrl-toggle-status ${params.initial ? 'on' : ''}`;
+                status.textContent = params.initial ? 'ON' : 'OFF';
 
                 const toggle = document.createElement('div');
-                toggle.className = `custom-toggle ${params.initial ? 'active' : ''}`;
-
-                const hiddenInput = document.createElement('input');
-                hiddenInput.type = 'checkbox';
-                hiddenInput.className = 'toggle-hidden';
-                hiddenInput.checked = params.initial ?? false;
+                toggle.className = `ctrl-toggle ${params.initial ? 'on' : ''}`;
 
                 toggle.addEventListener('click', () => {
-                    hiddenInput.checked = !hiddenInput.checked;
-                    toggle.classList.toggle('active', hiddenInput.checked);
-                    toggleLabel.textContent = hiddenInput.checked ? 'On' : 'Off';
-                    params.onToggleChange(hiddenInput.checked);
+                    if (params.onToggleChange) {
+                        const isOn = toggle.classList.toggle('on');
+                        status.classList.toggle('on', isOn);
+                        status.textContent = isOn ? 'ON' : 'OFF';
+                        params.onToggleChange(isOn);
+                    }
                 });
 
-                wrapper.appendChild(toggleLabel);
+                wrapper.appendChild(labelDiv);
+                wrapper.appendChild(status);
                 wrapper.appendChild(toggle);
                 row.appendChild(wrapper);
-                params.onToggleChange(params.initial ?? false);
+            } else {
+                // Standard label for other controls
+                const labelEl = document.createElement('label');
+                labelEl.className = 'ctrl-label';
+                labelEl.innerHTML = `${icons[label] || '⚙️'} ${label}`;
+                row.appendChild(labelEl);
+
+                if ('onSliderChange' in params && params.onSliderChange) {
+                    const sliderContainer = document.createElement('div');
+                    sliderContainer.className = 'ctrl-slider-container';
+
+                    const slider = document.createElement('input');
+                    slider.type = 'range';
+                    slider.className = 'ctrl-slider';
+                    slider.min = `${params.min ?? 0}`;
+                    slider.max = `${params.max ?? 1}`;
+                    slider.step = `${params.step ?? 0.01}`;
+                    slider.value = `${params.initial ?? 0}`;
+                    slider.addEventListener('input', () => {
+                        if (params.onSliderChange) params.onSliderChange(parseFloat(slider.value));
+                    });
+
+                    sliderContainer.appendChild(slider);
+                    row.appendChild(sliderContainer);
+                    params.onSliderChange(parseFloat(slider.value));
+                }
+
+                if ('onSelectChange' in params && params.onSelectChange && params.options) {
+                    const selectWrap = document.createElement('div');
+                    selectWrap.className = 'ctrl-select-wrap';
+
+                    const select = document.createElement('select');
+                    select.className = 'ctrl-select';
+                    select.innerHTML = params.options.map((opt: string) => `<option value="${opt}">${opt}</option>`).join('');
+                    select.value = (params.initial as string) ?? params.options[0];
+                    select.addEventListener('change', () => {
+                        if (params.onSelectChange) params.onSelectChange(select.value);
+                    });
+
+                    const arrow = document.createElement('div');
+                    arrow.className = 'ctrl-select-arrow';
+                    arrow.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>`;
+
+                    selectWrap.appendChild(select);
+                    selectWrap.appendChild(arrow);
+                    row.appendChild(selectWrap);
+                    params.onSelectChange(select.value);
+                }
+
+                if ('onColorChange' in params && params.onColorChange) {
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'ctrl-color-grid';
+
+                    // Create a row of curated preset colors
+                    const presets = [
+                        [0.08, 0.5, 1],    // Blue
+                        [1, 0.2, 0.2],     // Red
+                        [0, 1, 0.5],       // Green
+                        [1, 0.45, 0.075],  // Orange
+                        [0.6, 0.3, 1],     // Purple
+                        [1, 0, 0.5],       // Pink
+                        [0.8, 0.8, 0.8],   // Silver
+                        [1, 0.84, 0],      // Gold
+                    ];
+
+                    presets.forEach(color => {
+                        const btn = document.createElement('button');
+                        btn.className = 'ctrl-color-btn';
+                        btn.style.background = `rgb(${color[0] * 255}, ${color[1] * 255}, ${color[2] * 255})`;
+
+                        btn.onclick = () => {
+                            if (params.onColorChange) params.onColorChange(color as [number, number, number]);
+                        };
+
+                        wrapper.appendChild(btn);
+                    });
+
+                    // Add Custom Color Picker
+                    const pickerWrapper = document.createElement('div');
+                    pickerWrapper.className = 'ctrl-color-picker-wrapper';
+                    pickerWrapper.title = 'Custom Color';
+
+                    const customBtn = document.createElement('div');
+                    customBtn.className = 'ctrl-color-custom-btn';
+                    customBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>`;
+
+                    const colorInput = document.createElement('input');
+                    colorInput.type = 'color';
+                    colorInput.className = 'ctrl-color-input';
+                    const initialColor = (params.initial as [number, number, number]) ?? [0.08, 0.5, 1];
+                    colorInput.value = rgbToHex(initialColor);
+
+                    colorInput.oninput = () => {
+                        const color = hexToRgb(colorInput.value);
+                        if (params.onColorChange) params.onColorChange(color);
+                        customBtn.style.background = colorInput.value;
+                        customBtn.innerHTML = ''; // Hide the plus icon when a color is chosen
+                    };
+
+                    pickerWrapper.appendChild(customBtn);
+                    pickerWrapper.appendChild(colorInput);
+                    wrapper.appendChild(pickerWrapper);
+
+                    row.appendChild(wrapper);
+                    params.onColorChange((params.initial as [number, number, number]) ?? [0.08, 0.5, 1]);
+                }
             }
 
             body.appendChild(row);
         }
     }
 
-    controlsPanel.appendChild(body);
-    document.body.appendChild(controlsPanel);
+    panelInner.appendChild(body);
+    panel.appendChild(panelInner);
+    document.body.appendChild(panel);
+    document.body.appendChild(toggleBtn);
+
+    // Toggle functionality
+    const hidePanel = () => {
+        panel.classList.add('hidden');
+    };
+
+    const showPanel = () => {
+        panel.classList.remove('hidden');
+    };
+
+    toggleBtn.addEventListener('click', showPanel);
+    closeBtn.addEventListener('click', hidePanel);
 }
 
-type ControlParam = {
+type SwitchControlParam = {
     initial?: unknown;
     min?: number;
     max?: number;
