@@ -400,3 +400,274 @@ h1, h2, h3, h4, h5, h6 {
 .mb-sm { margin-bottom: var(--spacing-sm); }
 .mb-md { margin-bottom: var(--spacing-md); }
 .mb-lg { margin-bottom: var(--spacing-lg); }
+
+/* ========================================
+   LIQUID METAL MENU SYSTEM
+   Chrome/Metallic Effect with Iridescence
+======================================== */
+
+/* Light theme base for liquid metal (matches the reference image) */
+.liquid-metal-container {
+  background: #e8e8ec;
+  padding: var(--spacing-2xl);
+  border-radius: var(--radius-xl);
+}
+
+/* Dark theme override */
+[data-theme="dark"] .liquid-metal-container,
+:root:not([data-theme="light"]) .liquid-metal-container {
+  background: linear-gradient(135deg, #2a2a3a 0%, #1a1a2e 100%);
+}
+
+/* Liquid Metal Menu Nav */
+.liquid-metal-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-lg);
+  justify-content: center;
+  align-items: center;
+}
+
+/* Individual Liquid Metal Button */
+.liquid-metal-btn {
+  --btn-height: 72px;
+  --btn-padding: 40px;
+  --border-width: 4px;
+
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 var(--btn-padding);
+  height: var(--btn-height);
+  min-width: 180px;
+  font-family: var(--font-family);
+  font-size: var(--font-size-lg);
+  font-weight: 500;
+  text-decoration: none;
+  color: #1a1a2e;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  isolation: isolate;
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Outer soft shadow/glow layer */
+.liquid-metal-btn::before {
+  content: '';
+  position: absolute;
+  inset: -8px;
+  border-radius: calc(var(--btn-height) / 2 + 12px);
+  background: linear-gradient(145deg, #d8d8dc 0%, #f0f0f4 100%);
+  box-shadow:
+    8px 8px 24px rgba(0, 0, 0, 0.15),
+    -4px -4px 16px rgba(255, 255, 255, 0.8),
+    inset 2px 2px 4px rgba(255, 255, 255, 0.5),
+    inset -2px -2px 4px rgba(0, 0, 0, 0.05);
+  z-index: -3;
+  transition: box-shadow 0.3s ease;
+}
+
+/* Chrome/Iridescent border ring */
+.liquid-metal-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: calc(var(--btn-height) / 2);
+  padding: var(--border-width);
+  background: conic-gradient(
+    from 180deg at 50% 50%,
+    #1a1a2e 0deg,
+    #2d4a7c 30deg,
+    #4a7cc2 60deg,
+    #7cb4ea 90deg,
+    #f4d03f 120deg,
+    #f5a623 150deg,
+    #e74c3c 180deg,
+    #9b59b6 210deg,
+    #3498db 240deg,
+    #1a1a2e 270deg,
+    #2c3e50 300deg,
+    #34495e 330deg,
+    #1a1a2e 360deg
+  );
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  z-index: -1;
+  animation: liquid-rotate 8s linear infinite;
+  filter: saturate(1.2) contrast(1.1);
+}
+
+/* Inner white surface */
+.liquid-metal-btn .btn-inner {
+  position: absolute;
+  inset: var(--border-width);
+  border-radius: calc(var(--btn-height) / 2 - var(--border-width));
+  background: linear-gradient(
+    165deg,
+    #ffffff 0%,
+    #f8f8fa 30%,
+    #f0f0f4 60%,
+    #e8e8ec 100%
+  );
+  box-shadow:
+    inset 2px 2px 8px rgba(255, 255, 255, 0.9),
+    inset -1px -1px 4px rgba(0, 0, 0, 0.05);
+  z-index: -1;
+}
+
+/* Text styling */
+.liquid-metal-btn span {
+  position: relative;
+  z-index: 1;
+  letter-spacing: -0.01em;
+}
+
+/* Rotating chrome animation */
+@keyframes liquid-rotate {
+  from {
+    filter: saturate(1.2) contrast(1.1) hue-rotate(0deg);
+  }
+  to {
+    filter: saturate(1.2) contrast(1.1) hue-rotate(360deg);
+  }
+}
+
+/* Hover state */
+.liquid-metal-btn:hover {
+  transform: translateY(-3px) scale(1.02);
+}
+
+.liquid-metal-btn:hover::before {
+  box-shadow:
+    12px 12px 32px rgba(0, 0, 0, 0.2),
+    -6px -6px 20px rgba(255, 255, 255, 0.9),
+    inset 2px 2px 4px rgba(255, 255, 255, 0.5),
+    inset -2px -2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.liquid-metal-btn:hover::after {
+  animation-duration: 3s;
+}
+
+/* Active/pressed state */
+.liquid-metal-btn:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.liquid-metal-btn:active::before {
+  box-shadow:
+    4px 4px 12px rgba(0, 0, 0, 0.2),
+    -2px -2px 8px rgba(255, 255, 255, 0.7),
+    inset 4px 4px 8px rgba(0, 0, 0, 0.1),
+    inset -2px -2px 4px rgba(255, 255, 255, 0.3);
+}
+
+/* Active menu item state */
+.liquid-metal-btn.active::after {
+  background: conic-gradient(
+    from 180deg at 50% 50%,
+    #667eea 0deg,
+    #764ba2 60deg,
+    #f093fb 120deg,
+    #667eea 180deg,
+    #764ba2 240deg,
+    #f093fb 300deg,
+    #667eea 360deg
+  );
+  animation-duration: 4s;
+}
+
+/* Size variants */
+.liquid-metal-btn.btn-sm {
+  --btn-height: 52px;
+  --btn-padding: 28px;
+  --border-width: 3px;
+  font-size: var(--font-size-base);
+  min-width: 140px;
+}
+
+.liquid-metal-btn.btn-lg {
+  --btn-height: 88px;
+  --btn-padding: 56px;
+  --border-width: 5px;
+  font-size: var(--font-size-xl);
+  min-width: 220px;
+}
+
+/* Dark theme adaptations */
+[data-theme="dark"] .liquid-metal-btn,
+:root:not([data-theme="light"]) .liquid-metal-btn {
+  color: #ffffff;
+}
+
+[data-theme="dark"] .liquid-metal-btn::before,
+:root:not([data-theme="light"]) .liquid-metal-btn::before {
+  background: linear-gradient(145deg, #2a2a3e 0%, #1a1a28 100%);
+  box-shadow:
+    8px 8px 24px rgba(0, 0, 0, 0.5),
+    -4px -4px 16px rgba(255, 255, 255, 0.05),
+    inset 2px 2px 4px rgba(255, 255, 255, 0.05),
+    inset -2px -2px 4px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .liquid-metal-btn .btn-inner,
+:root:not([data-theme="light"]) .liquid-metal-btn .btn-inner {
+  background: linear-gradient(
+    165deg,
+    #3a3a4e 0%,
+    #2a2a3e 30%,
+    #222230 60%,
+    #1a1a28 100%
+  );
+  box-shadow:
+    inset 2px 2px 8px rgba(255, 255, 255, 0.08),
+    inset -1px -1px 4px rgba(0, 0, 0, 0.4);
+}
+
+/* Icon support */
+.liquid-metal-btn .btn-icon {
+  margin-right: var(--spacing-sm);
+  display: inline-flex;
+  font-size: 1.25em;
+}
+
+/* Subtle shimmer effect on inner surface */
+.liquid-metal-btn .btn-inner::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    rgba(255, 255, 255, 0.4) 45%,
+    rgba(255, 255, 255, 0.6) 50%,
+    rgba(255, 255, 255, 0.4) 55%,
+    transparent 60%
+  );
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+}
+
+.liquid-metal-btn:hover .btn-inner::before {
+  transform: translateX(100%);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .liquid-metal-btn {
+    --btn-height: 60px;
+    --btn-padding: 32px;
+    min-width: 150px;
+    font-size: var(--font-size-base);
+  }
+
+  .liquid-metal-nav {
+    gap: var(--spacing-md);
+  }
+}
