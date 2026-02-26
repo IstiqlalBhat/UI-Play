@@ -1,0 +1,67 @@
+/* ═══════════════════════════════════════════════
+   DESIGN TOKENS
+   ═══════════════════════════════════════════════ */
+:root {
+  /* ── Radii ── */
+  --radius-sm: 14px;
+  --radius-md: 24px;
+  --radius-lg: 30px;
+  --radius-xl: 36px;
+  --radius-pill: 50px;
+  --radius-phone: 48px;
+
+  /* ── Blur ── */
+  --blur-sm: 16px;
+  --blur-md: 28px;
+  --blur-lg: 40px;
+
+  /* ── Shadows ── */
+  --shadow-glass:
+    0 10px 32px rgba(0, 0, 0, 0.06),
+    0 3px 10px rgba(0, 0, 0, 0.03),
+    0 0 0 0.5px rgba(255, 255, 255, 0.4),
+    inset 0 1.5px 0 rgba(255, 255, 255, 0.85);
+  --shadow-neumorphic:
+    20px 20px 45px rgba(160, 140, 110, 0.4),
+    -12px -12px 30px rgba(255, 255, 255, 1),
+    inset 4px 4px 10px rgba(255, 255, 255, 1),
+    inset -4px -4px 10px rgba(180, 160, 135, 0.3),
+    inset 0 20px 20px rgba(255, 255, 255, 0.9);
+  --shadow-neumorphic-hover:
+    25px 25px 55px rgba(160, 140, 110, 0.45),
+    -15px -15px 40px rgba(255, 255, 255, 1),
+    inset 4px 4px 10px rgba(255, 255, 255, 1),
+    inset -4px -4px 10px rgba(180, 160, 135, 0.3);
+  --shadow-neumorphic-active:
+    inset 8px 8px 20px rgba(160, 140, 110, 0.35),
+    inset -8px -8px 20px rgba(255, 255, 255, 0.9);
+  --shadow-phone:
+    0 0 0 2px #c0b8a8,
+    0 0 0 4px #2a2a2a,
+    0 0 0 6.5px #1a1a1a,
+    0 0 0 8px #3a3a3a,
+    0 0 0 10px #b8b0a0,
+    0 0 0 11.5px rgba(255, 255, 255, 0.4),
+    0 40px 100px rgba(0, 0, 0, 0.22),
+    0 15px 40px rgba(0, 0, 0, 0.12),
+    0 5px 15px rgba(0, 0, 0, 0.08);
+
+  /* ── Colors ── */
+  --color-text: #4a3c2a;
+  --color-text-muted: #7a6545;
+  --color-accent-gold: #c0a050;
+  --color-accent-pink: #ec4899;
+  --color-bg-warm: #e8e3dc;
+  --color-bg-phone: linear-gradient(180deg, #f9f6f2 0%, #f5f2ed 50%, #f2efe9 100%);
+  --color-glass-white: rgba(255, 255, 255, 0.6);
+  --color-glass-border: rgba(255, 255, 255, 0.7);
+
+  /* ── Easing ── */
+  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-smooth: cubic-bezier(0.25, 0.1, 0.25, 1);
+
+  /* ── Motion ── */
+  --duration-fast: 0.25s;
+  --duration-normal: 0.3s;
+  --duration-slow: 0.4s;
+}

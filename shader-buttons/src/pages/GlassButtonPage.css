@@ -1,0 +1,193 @@
+/* =============================================
+   GLASS BUTTON PAGE
+   ============================================= */
+.gp-page {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  font-family: 'Outfit', -apple-system, sans-serif;
+  background: #c8c6c3;
+}
+
+/* Liquid metal paper-texture background overlay */
+.gp-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  opacity: 0.35;
+}
+
+.gp-center {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* =============================================
+   LAYER 1 — Wide frosted glass strip
+   ============================================= */
+.gp-strip {
+  position: relative;
+  width: 88vw;
+  max-width: 1200px;
+  min-width: 520px;
+  height: 96px;
+  border-radius: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding-left: 4px;
+
+  /* Frosted glass material */
+  background: linear-gradient(
+    180deg,
+    rgba(215, 213, 210, 0.55) 0%,
+    rgba(205, 203, 200, 0.40) 40%,
+    rgba(198, 196, 193, 0.35) 100%
+  );
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+
+  /* Glass edges */
+  border: 1px solid rgba(255, 255, 255, 0.35);
+
+  /* Depth & inner shadows for glass slab feel */
+  box-shadow:
+    inset 0 1.5px 0 rgba(255, 255, 255, 0.55),
+    inset 0 -1.5px 3px rgba(0, 0, 0, 0.04),
+    inset 1px 0 2px rgba(255, 255, 255, 0.2),
+    inset -1px 0 2px rgba(0, 0, 0, 0.02),
+    0 12px 40px rgba(0, 0, 0, 0.07),
+    0 4px 14px rgba(0, 0, 0, 0.04),
+    0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+/* Gloss on the strip — positioned via GlossOverlay */
+.gp-strip__highlight {
+  left: 8%;
+  right: 8%;
+  border-radius: 48px 48px 0 0;
+  z-index: 0;
+}
+
+/* =============================================
+   CAPSULE — ShaderBorder overrides
+   ============================================= */
+.gp-capsule {
+  width: 400px;
+  height: 84px;
+  z-index: 1;
+}
+
+/* Override the ShaderBorder ring for this page's tighter look */
+.gp-capsule .sb-ring {
+  inset: 2px;
+  border-radius: 40px;
+  box-shadow:
+    0 0 0 1px rgba(50, 50, 60, 0.25),
+    inset 0 0 0 0.5px rgba(0, 0, 0, 0.05);
+}
+
+/* Override the face shadow for recessed glass feel */
+.gp-capsule .sb-face {
+  box-shadow:
+    inset 0 4px 12px rgba(0, 0, 0, 0.07),
+    inset 0 -3px 10px rgba(0, 0, 0, 0.04),
+    inset 3px 0 8px rgba(0, 0, 0, 0.03),
+    inset -3px 0 8px rgba(0, 0, 0, 0.03),
+    inset 0 0 24px rgba(0, 0, 0, 0.04),
+    0 0 0 0.5px rgba(255, 255, 255, 0.35);
+  background: linear-gradient(
+    178deg,
+    #ffffff 0%,
+    #fbfbfa 20%,
+    #f6f5f3 50%,
+    #f0efed 80%,
+    #ebeae8 100%
+  );
+}
+
+/* Override the outer shadow/transitions for capsule behavior */
+.gp-capsule.sb-outer {
+  box-shadow:
+    0 10px 36px rgba(0, 0, 0, 0.09),
+    0 3px 10px rgba(0, 0, 0, 0.05),
+    0 0 0 0.5px rgba(0, 0, 0, 0.06);
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.35s ease;
+}
+.gp-capsule.sb-outer:hover {
+  transform: translateY(-3px) scale(1.012);
+  box-shadow:
+    0 16px 48px rgba(0, 0, 0, 0.12),
+    0 6px 16px rgba(0, 0, 0, 0.06);
+}
+.gp-capsule.sb-outer:active {
+  transform: scale(0.98);
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.07),
+    0 1px 4px rgba(0, 0, 0, 0.04);
+}
+
+/* Override the GlossOverlay intensity on capsule face */
+.gp-capsule .gloss-overlay {
+  height: 52%;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.85) 0%,
+    rgba(255, 255, 255, 0.20) 50%,
+    transparent 100%
+  );
+}
+
+/* Button text */
+.gp-face__text {
+  position: relative;
+  z-index: 1;
+  font-size: 1.55rem;
+  font-weight: 500;
+  color: #1a1a1a;
+  letter-spacing: -0.01em;
+  user-select: none;
+}
+
+/* =============================================
+   RESPONSIVE
+   ============================================= */
+@media (max-width: 600px) {
+  .gp-strip {
+    width: 96vw;
+    min-width: 0;
+    height: 82px;
+    border-radius: 41px;
+  }
+
+  .gp-strip__highlight {
+    border-radius: 41px 41px 0 0;
+  }
+
+  .gp-capsule {
+    width: 320px;
+    height: 72px;
+  }
+
+  .gp-face__text {
+    font-size: 1.25rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .gp-capsule {
+    width: 260px;
+    height: 64px;
+  }
+
+  .gp-face__text {
+    font-size: 1.1rem;
+  }
+}
