@@ -1,0 +1,15 @@
+@import './tokens/tokens.css';
+
+/* Reset */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Outfit', -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e8e3dc;
+  overflow-x: hidden;
+}
+#root { width: 100%; display: flex; justify-content: center; }

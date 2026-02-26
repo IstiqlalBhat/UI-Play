@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+    <title>Shader Buttons — Jelly UI Demos</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+      .back-btn {
+        position: fixed;
+        top: 16px;
+        left: 16px;
+        z-index: 200;
+        background: rgba(0, 0, 0, 0.06);
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        color: #555;
+        padding: 0.625rem 1rem;
+        border-radius: 0.5rem;
+        font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.2s ease;
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+      }
+      .back-btn:hover {
+        background: rgba(0, 0, 0, 0.1);
+        transform: translateX(-2px);
+      }
+      @media (max-width: 768px) {
+        .back-btn {
+          top: 1rem;
+          left: 1rem;
+          padding: 0.5rem 0.75rem;
+          font-size: 0.8rem;
+        }
+      }
+      @media (max-width: 480px) {
+        .back-btn {
+          top: 0.75rem;
+          left: 0.75rem;
+          padding: 0.4rem 0.6rem;
+          font-size: 0.75rem;
+          border-radius: 0.4rem;
+        }
+        .back-btn svg {
+          width: 14px;
+          height: 14px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <a href="index.html" class="back-btn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M19 12H5M12 19l-7-7 7-7" />
+      </svg>
+      Back
+    </a>
+    <div id="root"></div>
+    <script type="module" src="/src/buttons/main.jsx"></script>
+  </body>
+</html>
