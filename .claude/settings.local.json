@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir \"C:\\\\CodeJaai\\\\UI Sexy\" /b)",
+      "Bash(dir \"C:\\\\CodeJaai\\\\UI Sexy\\\\combined\" /s /b)",
+      "Bash(findstr:*)",
+      "Bash(del \"C:\\\\CodeJaai\\\\UI Sexy\\\\combined\\\\app.html\")",
+      "Bash(del \"C:\\\\CodeJaai\\\\UI Sexy\\\\combined\\\\os-loader.ts\")",
+      "Bash(del \"C:\\\\CodeJaai\\\\UI Sexy\\\\combined\\\\src\\\\combined-scene.ts\")"
+    ]
+  }
+}
